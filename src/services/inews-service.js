@@ -10,7 +10,7 @@ import itemsService from "./items-service.js";
 
 class RundownProcessor {
     constructor() {
-        this.setupConnectionListener();
+        
     }
 
     async initialize() {
@@ -20,9 +20,7 @@ class RundownProcessor {
     }
 
     setupConnectionListener() {
-        conn.on('connections', connections => {
-            logger(`${connections} FTP connections active`);
-        });
+        
     }
 
     async rundownIterator() {
