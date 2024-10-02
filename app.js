@@ -4,7 +4,7 @@ import express from "express";
 import cors from "cors";
 import getServerIP from "./src/utilities/host-ip.js";
 import bodyParser from 'body-parser';
-//import logger from "./src/utilities/logger.js";
+import logger from "./src/utilities/logger.js";
 const app = express(); 
 
 //app.use(cors({origin: '*'}));
