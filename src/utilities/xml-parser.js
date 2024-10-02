@@ -44,7 +44,13 @@ function parseAttachments(story) {
     return obj;
 }
 
-export default {parseAttachments};
+function parseMos(message) {
+  const parser = new XMLParser();
+  let obj = parser.parse(message);
+  return obj;
+}
+
+export default {parseAttachments,parseMos};
 
 
 /*

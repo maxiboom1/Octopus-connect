@@ -1,5 +1,6 @@
 import net from 'net';
 import appConfig from '../utilities/app-config.js';
+import parser from '../utilities/xml-parser.js';
 
 // MOS TCP client with listeners
 class TcpClient {
@@ -63,7 +64,7 @@ class TcpClient {
             console.log(`Lower Port listener connected: ${socket.remoteAddress}:${socket.remotePort}`);
 
             socket.on('data', (data) => {
-                console.log(`Received data on Lower Port: ${data.toString()}`);
+                console.log(`Received data on Lower Port: ${parser.parseMos(data.toString())}`);
                 // Send ACK or process data here
             });
 
@@ -84,7 +85,7 @@ class TcpClient {
             console.log(`Upper Port listener connected: ${socket.remoteAddress}:${socket.remotePort}`);
 
             socket.on('data', (data) => {
-                console.log(`Received data on Upper Port: ${data.toString()}`);
+                //console.log(`Received data on Upper Port: ${data.toString()}`);
                 // Send ACK or process data here
             });
 
