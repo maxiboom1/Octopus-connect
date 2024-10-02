@@ -5,25 +5,15 @@ import parser from '../utilities/xml-parser.js';
 // MOS TCP client with listeners
 class TcpClient {
     constructor() {
-        this.clientLower = new net.Socket();
         this.clientUpper = new net.Socket();
-        this.serverLower = null;
         this.serverUpper = null;
-        this.onlineLower = false;
         this.onlineUpper = false;
         this.initiateConnection();
         this.startListeners();
     }
 
     initiateConnection() {
-        this.clientLower.removeAllListeners();
         this.clientUpper.removeAllListeners();
-
-        // Connect to the lower port
-        this.clientLower.connect({ host: appConfig.octopusIpAddr, port: appConfig.mediaPort }, () => {
-            this.onlineLower = true;
-            console.log(`Connected to MOS Lower Port ${appConfig.mediaPort}`);
-        });
 
         // Connect to the upper port
         this.clientUpper.connect({ host: appConfig.octopusIpAddr, port: appConfig.rundownPort }, () => {
@@ -31,24 +21,11 @@ class TcpClient {
             console.log(`Connected to MOS Upper Port ${appConfig.rundownPort}`);
         });
 
-        // Handle lower port connection close
-        this.clientLower.once('close', () => {
-            this.onlineLower = false;
-            console.log('MOS Lower Port is offline. Trying to reconnect...');
-            setTimeout(() => { this.initiateConnection(); }, 5000);
-        });
-
         // Handle upper port connection close
         this.clientUpper.once('close', () => {
             this.onlineUpper = false;
             console.log('MOS Upper Port is offline. Trying to reconnect...');
             setTimeout(() => { this.initiateConnection(); }, 5000);
-        });
-
-        // Handle errors on the lower port
-        this.clientLower.once('error', (err) => {
-            this.onlineLower = false;
-            console.log(`Lower Port Error: ${err.message}`);
         });
 
         // Handle errors on the upper port
@@ -59,21 +36,10 @@ class TcpClient {
     }
 
     startListeners() {
-        // Start listener on the lower port
-        this.serverLower = net.createServer((socket) => {
-            console.log(`Lower Port listener connected: ${socket.remoteAddress}:${socket.remotePort}`);
-            socket.on('data', (data) => {parser.parseMos(data,"Lower port");});
-            socket.on('close', () => {console.log('Lower Port listener closed');});
-            socket.on('error', (err) => {console.log(`Lower Port listener error: ${err.message}`);});
-
-        }).listen(appConfig.mediaPort, () => {
-            console.log(`Listening on Lower Port ${appConfig.mediaPort}`);
-        });
-
         // Start listener on the upper port
         this.serverUpper = net.createServer((socket) => {
             console.log(`Upper Port listener connected: ${socket.remoteAddress}:${socket.remotePort}`);
-            socket.on('data', (data) => {});
+            socket.on('data', (data) => {parser.parseMos(data,"Upper port");});
             socket.on('close', () => {console.log('Upper Port listener socket closed');});
             socket.on('error', (err) => {console.log(`Upper Port listener error: ${err.message}`);});
 
@@ -82,15 +48,24 @@ class TcpClient {
         });
     }
 
-    reconnect() {}
+    async sendToUpper(payload) {
+        if (this.onlineUpper) {
+            try {
+                
+                // Convert the JSON string to a buffer (using UTF-16LE)
+                const buffer = Buffer.from(payload); 
+    
+                // Send the buffer directly
+                this.clientUpper.write(buffer);
+            } catch (error) {
+                console.error('Error sending data to upper client:', error);
+            }
+        } else {
+            console.log('Upper client is not online');
+        }
+    }
 
-    async sendAndReceiveLower(dataToSend) {}
-
-    async sendAndReceiveUpper(dataToSend) {}
-
-    get isOnlineLower() { return this.onlineLower; }
     get isOnlineUpper() { return this.onlineUpper; }
-    get remoteHostLower() { return this.clientLower.remoteAddress; }
     get remoteHostUpper() { return this.clientUpper.remoteAddress; }
 }
 

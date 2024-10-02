@@ -1,4 +1,5 @@
 import {XMLParser} from "fast-xml-parser";
+import octopusService from "../services/octopus-service.js"
 //import itemsHash from "../1-dal/items-hashmap.js";
 
 
@@ -57,54 +58,9 @@ function parseMos(buffer, port) {
   const parser = new XMLParser();
   let obj = parser.parse(utf8Str);
   
-  if(obj.mos.heartbeat){
-    console.log(port,obj);
-  }
-  
-  return obj;
+  octopusService.mosRouter(obj, port);
+
 }
 
 export default {parseAttachments,parseMos};
 
-
-/*
-Example attachment:
-
-<AttachmentContent><mos>
-                <ncsItem>
-                        <item>
-                                <itemID>1</itemID>
-                                <itemSlug>asd</itemSlug>
-                                <objID>12345</objID>
-                                <mosID>iNEWSMOS1</mosID>
-                                <mosItemBrowserProgID>alex</mosItemBrowserProgID>
-                                <mosItemEditorProgID>alexE</mosItemEditorProgID>
-                                <mosAbstract>asd</mosAbstract>
-                                <group>1</group>
-                                <gfxItem>102</gfxItem>
-                                <gfxTemplate>10005</gfxTemplate>
-                                <gfxProduction>2</gfxProduction>
-                        </item>
-                </ncsItem>
-        </mos></AttachmentContent>
-
-
-
-
-// Example for edited attachment
-{
-  '1': '<AttachmentContent><mos>\r\n' +
-    '\t\t<itemID>1</itemID>\r\n' +
-    '\t\t<itemSlug>eee123</itemSlug>\r\n' +
-    '\t\t<objID>12345</objID>\r\n' +
-    '\t\t<mosID>iNEWSMOS1</mosID>\r\n' +
-    '\t\t<mosItemBrowserProgID>alex</mosItemBrowserProgID>\r\n' +
-    '\t\t<mosItemEditorProgID>alexE</mosItemEditorProgID>\r\n' +
-    '\t\t<mosAbstract/>\r\n' +
-    '\t\t<group>1</group>\r\n' +
-    '\t\t<gfxItem>143</gfxItem>\r\n' +
-    '\t\t<gfxTemplate>10005</gfxTemplate>\r\n' +
-    '\t\t<gfxProduction>2</gfxProduction>\r\n' +
-    '\t</mos></AttachmentContent>'
-}        
-*/
