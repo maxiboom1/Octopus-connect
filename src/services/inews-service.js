@@ -14,7 +14,7 @@ class RundownProcessor {
     }
 
     async initialize() {
-        logger('Starting Inews-connect 1.9.3...');
+        logger('Starting Octopus-connect 1.9.3...');
         await sqlService.initialize();
         this.rundownIterator();
     }
@@ -155,7 +155,8 @@ class RundownProcessor {
     }
 
     async startMainProcess() {
-        await this.initialize();
+        //await this.initialize();
+        console.log('x');
     }
 }
 
