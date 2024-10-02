@@ -14,7 +14,7 @@ class RundownProcessor {
     }
 
     async initialize() {
-        logger('Starting Octopus-connect 1.0...');
+        logger('Starting Octopus-connect 1.00...');
         await sqlService.initialize();
         this.rundownIterator();
     }
