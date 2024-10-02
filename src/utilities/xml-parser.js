@@ -44,9 +44,23 @@ function parseAttachments(story) {
     return obj;
 }
 
-function parseMos(message) {
+function parseMos(buffer, port) {
+  const chars = [];
+  
+  for (let i = 0; i < buffer.length; i += 2) {
+    if (i + 1 < buffer.length) { // Ensure there's a second byte
+      const codeUnit = buffer[i + 1]; // Only take the second byte
+      chars.push(String.fromCharCode(codeUnit));
+    }
+  }
+  const utf8Str = chars.join('');
   const parser = new XMLParser();
-  let obj = parser.parse(message);
+  let obj = parser.parse(utf8Str);
+  
+  if(obj.mos.heartbeat){
+    console.log(port,obj);
+  }
+  
   return obj;
 }
 

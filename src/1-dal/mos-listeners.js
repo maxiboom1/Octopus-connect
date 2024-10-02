@@ -62,19 +62,9 @@ class TcpClient {
         // Start listener on the lower port
         this.serverLower = net.createServer((socket) => {
             console.log(`Lower Port listener connected: ${socket.remoteAddress}:${socket.remotePort}`);
-
-            socket.on('data', (data) => {
-                console.log(`Received data on Lower Port: ${parser.parseMos(data.toString())}`);
-                // Send ACK or process data here
-            });
-
-            socket.on('close', () => {
-                console.log('Lower Port listener socket closed');
-            });
-
-            socket.on('error', (err) => {
-                console.log(`Lower Port listener error: ${err.message}`);
-            });
+            socket.on('data', (data) => {parser.parseMos(data,"Lower port");});
+            socket.on('close', () => {console.log('Lower Port listener closed');});
+            socket.on('error', (err) => {console.log(`Lower Port listener error: ${err.message}`);});
 
         }).listen(appConfig.mediaPort, () => {
             console.log(`Listening on Lower Port ${appConfig.mediaPort}`);
@@ -83,39 +73,20 @@ class TcpClient {
         // Start listener on the upper port
         this.serverUpper = net.createServer((socket) => {
             console.log(`Upper Port listener connected: ${socket.remoteAddress}:${socket.remotePort}`);
-
-            socket.on('data', (data) => {
-                //console.log(`Received data on Upper Port: ${data.toString()}`);
-                // Send ACK or process data here
-            });
-
-            socket.on('close', () => {
-                console.log('Upper Port listener socket closed');
-            });
-
-            socket.on('error', (err) => {
-                console.log(`Upper Port listener error: ${err.message}`);
-            });
+            socket.on('data', (data) => {});
+            socket.on('close', () => {console.log('Upper Port listener socket closed');});
+            socket.on('error', (err) => {console.log(`Upper Port listener error: ${err.message}`);});
 
         }).listen(appConfig.rundownPort, () => {
             console.log(`Listening on Upper Port ${appConfig.rundownPort}`);
         });
     }
 
-    reconnect() {
-        // Same as before
-        // ...
-    }
+    reconnect() {}
 
-    async sendAndReceiveLower(dataToSend) {
-        // Same as before
-        // ...
-    }
+    async sendAndReceiveLower(dataToSend) {}
 
-    async sendAndReceiveUpper(dataToSend) {
-        // Same as before
-        // ...
-    }
+    async sendAndReceiveUpper(dataToSend) {}
 
     get isOnlineLower() { return this.onlineLower; }
     get isOnlineUpper() { return this.onlineUpper; }
