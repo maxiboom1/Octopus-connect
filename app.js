@@ -24,5 +24,5 @@ app.listen(port, () => {
     logger(`Server service running on port ${port}`);
     logger(`Plugin url: http://${host}:${port}/index.html`)
     
-    processor.startMainProcess();
+    //processor.startMainProcess();
 });
