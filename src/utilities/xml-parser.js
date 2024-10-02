@@ -1,5 +1,5 @@
 import {XMLParser} from "fast-xml-parser";
-import itemsHash from "../1-dal/items-hashmap.js";
+//import itemsHash from "../1-dal/items-hashmap.js";
 
 
 
