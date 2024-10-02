@@ -19,15 +19,15 @@ class TcpClient {
         this.clientUpper.removeAllListeners();
 
         // Connect to the lower port
-        this.clientLower.connect({ host: appConfig.controlDeviceHost, port: appConfig.lowerPort }, () => {
+        this.clientLower.connect({ host: appConfig.octopusIpAddr, port: appConfig.mediaPort }, () => {
             this.onlineLower = true;
-            console.log(`Connected to MOS Lower Port ${appConfig.lowerPort}`);
+            console.log(`Connected to MOS Lower Port ${appConfig.mediaPort}`);
         });
 
         // Connect to the upper port
-        this.clientUpper.connect({ host: appConfig.controlDeviceHost, port: appConfig.upperPort }, () => {
+        this.clientUpper.connect({ host: appConfig.octopusIpAddr, port: appConfig.rundownPort }, () => {
             this.onlineUpper = true;
-            console.log(`Connected to MOS Upper Port ${appConfig.upperPort}`);
+            console.log(`Connected to MOS Upper Port ${appConfig.rundownPort}`);
         });
 
         // Handle lower port connection close
@@ -75,8 +75,8 @@ class TcpClient {
                 console.log(`Lower Port listener error: ${err.message}`);
             });
 
-        }).listen(appConfig.lowerPort, () => {
-            console.log(`Listening on Lower Port ${appConfig.lowerPort}`);
+        }).listen(appConfig.mediaPort, () => {
+            console.log(`Listening on Lower Port ${appConfig.mediaPort}`);
         });
 
         // Start listener on the upper port
@@ -96,8 +96,8 @@ class TcpClient {
                 console.log(`Upper Port listener error: ${err.message}`);
             });
 
-        }).listen(appConfig.upperPort, () => {
-            console.log(`Listening on Upper Port ${appConfig.upperPort}`);
+        }).listen(appConfig.rundownPort, () => {
+            console.log(`Listening on Upper Port ${appConfig.rundownPort}`);
         });
     }
 
