@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+	
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta charset="utf-8" />
+	<title>Inews connect</title>
+	<link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="assets/menu.css">
+</head>
+
+<body>
+	
+	<div id="iframeContainer" class="pluginBody">
+				
+		<div id="productionContainer">
+			<h3>Inews connect plugin</h3>
+			<label for="productionSelector">Production</label>
+			<select name="productionSelector" id="productionSelector">
+                <option value="" selected="selected">Set production</option>
+			</select>
+			<hr>
+		</div>
+		
+		<div id="templatesContainer" class="container">
+			
+			<div class="accordion scenesAccordion" id="scenesAccordion">
+				<!-- HERE IS THE DYNAMIC CONTENT -->
+			</div>
+
+		</div>
+
+		<iframe id="contentIframe" class="full-screen-iframe"></iframe>
+
+	</div>
+
+	<div id="popup" class="popup"></div>
+	
+	<div class="full-screen-spinner" id="full-screen-spinner">
+		<div class="spinner-border text-primary" style="width: 5rem; height: 5rem;" role="status">
+		  </div>
+	</div>
+
+</body>
+
+<script src="assets/menu.js"></script>
+<script src="assets/dist/js/bootstrap.bundle.min.js"></script>
+
+</html>

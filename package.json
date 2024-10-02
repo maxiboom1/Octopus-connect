@@ -1,0 +1,34 @@
+{
+  "name": "inews-connect",
+  "version": "1.7.1",
+  "description": "Connects to an Avid iNews server over FTP. Provide GFX plugin",
+  "license": "MIT",
+  "author": {
+    "name": "Alex Samih-Zade",
+    "email": "galutziogen@gmail.com"
+  },
+  "type": "module",
+  "main": "app.js",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "bufferutil": "^4.0.8",
+    "camelcase": "^6.2.0",
+    "canvas": "^2.11.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "fast-xml-parser": "^4.3.2",
+    "ftp": "^0.3.10",
+    "he": "^1.2.0",
+    "htmlparser2": "^6.1.0",
+    "jsdom": "^23.0.1",
+    "mssql": "^10.0.1",
+    "unescape": "^1.0.1",
+    "utf-8-validate": "^6.0.3"
+  },
+  "scripts": {
+    "start": "nodemon --ignore unlinkedItemsCache.json --ignore duplicatesCache.json app.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

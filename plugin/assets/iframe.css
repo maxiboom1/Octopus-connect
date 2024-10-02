@@ -1,0 +1,83 @@
+body {
+    background-color: #2a2e30;
+}
+
+label,h2{
+    color: rgba(255, 255, 255, 0.749);
+}
+
+.box{
+    width: 180px;
+    display: block;
+    margin: 5px 0px;
+}
+
+.controlBox{
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    align-items: baseline;
+    height: 1px;
+}
+
+button{
+    margin-top: 20px;
+    margin-right: 10px;
+}
+
+/* Style for the pluginPanel */
+.pluginPanel {
+    display: flex;
+    flex-direction: row-reverse;
+    background-color: #4c5054;
+    width: 100%;
+    direction: rtl; 
+    align-items: center; 
+}
+.pluginPanel label{
+   margin-right: 3px; 
+}
+
+/* Style for the pluginPanelBtn buttons */
+.pluginPanelBtn {
+    margin: -3px;
+    padding: 5px 16px;
+    background-color: #1777b7;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    margin-right: 16px;
+    border-radius: 5%;
+}
+
+#createCopy{
+    display: none;
+}
+
+.pluginPopover {
+    display: none; 
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #4c5054;
+    border: 1px solid #ccc;
+    /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
+    padding: 10px;
+    z-index: 10;
+}
+
+.linksButton {
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-block;
+  }
+  
+  .linksButton:hover {
+    background-color: #444;
+  }
