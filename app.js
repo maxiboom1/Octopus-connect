@@ -1,12 +1,10 @@
-//import processor from "./src/services/inews-service.js";
-//import routes from "./src/routes/routes.js";
-import express from "express";
-import cors from "cors";
-import getServerIP from "./src/utilities/host-ip.js";
-import bodyParser from 'body-parser';
-import logger from "./src/utilities/logger.js";
+
+// import express from "express";
+// import getServerIP from "./src/utilities/host-ip.js";
+// import bodyParser from 'body-parser';
+// import logger from "./src/utilities/logger.js";
 import mosClient from "./src/1-dal/mos-connector.js";
-const app = express(); 
+//const app = express(); 
 
 //app.use(cors({origin: '*'}));
 
@@ -19,11 +17,11 @@ const app = express();
 //app.use(express.static('plugin')); 
 
 // Start the Express server
-const port = 3000;
-app.listen(port, () => {
-    const host = getServerIP();
-    logger(`Server service running on port ${port}`);
-    logger(`Plugin url: http://${host}:${port}/index.html`)
+// const port = 3000;
+// app.listen(port, () => {
+//     const host = getServerIP();
+//     logger(`Server service running on port ${port}`);
+//     logger(`Plugin url: http://${host}:${port}/index.html`)
     
-    //processor.startMainProcess();
-});
+//     processor.startMainProcess();
+// });

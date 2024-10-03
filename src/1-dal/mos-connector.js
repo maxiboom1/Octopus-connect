@@ -24,6 +24,12 @@ class MosConnector {
 
         this.client.connect({ host: appConfig.octopusIpAddr, port: appConfig.rundownPort }, () => {
             console.log(`MOS client connected to ${appConfig.rundownPort}`);
+            this.sendToClient(`<mos><mosID>${appConfig.mosID}</mosID><ncsID>${appConfig.ncsID}</ncsID><messageID></messageID><roReqAll/></mos>`);
+        });
+        // Listen for data from the client
+        this.client.on('data', (data) => {
+        console.log('Received response from client');
+        parser.parseMos(data, "client");
         });
 
         this.client.once('close', () => {
@@ -53,7 +59,7 @@ class MosConnector {
     async sendToListener(payload) {
         try {
             if (this.serverSocket) { // Ensure there is an active connection
-                const buffer = Buffer.from(payload);
+                const buffer = Buffer.from(payload,'ucs-2').swap16();
                 this.serverSocket.write(buffer); // Send data to the listener
                 console.log('Data sent to listener');
             } else {
@@ -68,7 +74,7 @@ class MosConnector {
     async sendToClient(payload) {
         try {
             if (this.client.readyState === 'open') { // Ensure the client is connected
-                const buffer = Buffer.from(payload);
+                const buffer = Buffer.from(payload,'ucs-2').swap16();
                 this.client.write(buffer); // Send data to the client
                 console.log('Data sent to client');
             } else {
