@@ -1,7 +1,7 @@
 {
-  "name": "inews-connect",
+  "name": "octopus-connect",
   "version": "1.7.1",
-  "description": "Connects to an Avid iNews server over FTP. Provide GFX plugin",
+  "description": "Connects to octopus server using MOS protocol. Provide GFX plugin",
   "license": "MIT",
   "author": {
     "name": "Alex Samih-Zade",

@@ -1,24 +1,26 @@
-import mosClient from "../1-dal/mos-listeners.js";
+import mosConnector from "../1-dal/mos-connector.js";
 import appConfig from "../utilities/app-config.js";
-function mosRouter(msg){
-    if(msg.mos.roCreate){
-        console.log("roCreate recieved");
-        //... Proccess event
-        sendAck(msg);
+
+function mosRouter(msg, port){
+    console.log(port,msg);
+    if(msg.mos.heartbeat){
+        sendHeartbeat();
+        
     }
 
 }
 
 function sendAck(msg){
     const ack = constructAckMessage(msg);
-    mosClient.sendToUpper(ack);
+    mosConnector.sendToListener(ack);
+    mosConnector.sendToClient(ack);
 }
 
 function constructAckMessage(msg){
     const message = `<mos>
         <mosID>${appConfig.mosID}</mosID>
         <ncsID>${appConfig.ncsID}</ncsID>
-        <messageID>${msg.mos.messageID}</messageID>
+        <messageID>1</messageID>
         <roAck>
             <roID>${msg.mos.roCreate.roID}</roID>
         </roAck>

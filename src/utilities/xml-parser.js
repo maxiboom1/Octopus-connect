@@ -46,20 +46,19 @@ function parseAttachments(story) {
 }
 
 function parseMos(buffer, port) {
-  const chars = [];
-  
+  // Convert the buffer from UCS-2 big-endian to a UTF-16 string
+  let utf16Str = '';
   for (let i = 0; i < buffer.length; i += 2) {
-    if (i + 1 < buffer.length) { // Ensure there's a second byte
-      const codeUnit = buffer[i + 1]; // Only take the second byte
-      chars.push(String.fromCharCode(codeUnit));
-    }
+    // Read two bytes and treat them as a big-endian code unit
+    const codeUnit = buffer.readUInt16BE(i);
+    utf16Str += String.fromCharCode(codeUnit);
   }
-  const utf8Str = chars.join('');
-  const parser = new XMLParser();
-  let obj = parser.parse(utf8Str);
-  
-  octopusService.mosRouter(obj, port);
 
+  // Now that we have a proper UTF-16 string, we can parse it as XML
+  const parser = new XMLParser();
+  let obj = parser.parse(utf16Str);
+  //console.log("recieve from ", port, ":", obj);
+  octopusService.mosRouter(obj, port);
 }
 
 export default {parseAttachments,parseMos};
