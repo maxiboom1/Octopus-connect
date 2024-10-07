@@ -20,7 +20,7 @@ function mosRouter(msg, port) {
         
         // Story Events
         case !!msg.mos.roStorySend:
-            console.log(port, "storySend", msg.mos.roStorySend.storyBody);
+            console.log(port, "storySend");
             sendAck(msg.mos.roStorySend.roID);
             break;
         case !!msg.mos.roStoryMove:

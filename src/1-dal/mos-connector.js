@@ -45,8 +45,7 @@ class MosConnector {
 
     startServer() {
         this.server = net.createServer((socket) => {
-            this.serverSocket = socket; // Store the connection socket for sending data later
-    
+            this.serverSocket = socket; 
             let messageBuffer = Buffer.alloc(0); // Buffer to accumulate chunks
             let timer = null; // Timer for delayed processing
     
@@ -54,13 +53,10 @@ class MosConnector {
                 if (timer) clearTimeout(timer); // Clear any existing timer
                 timer = setTimeout(() => {
                     if (messageBuffer.length > 0) {
-                        // Directly pass the buffer to the parser without converting to string
                         parser.parseMos(messageBuffer, "listener");
-                        
-                        // Reset buffer after processing
                         messageBuffer = Buffer.alloc(0);
                     }
-                }, 50); // Delay processing by 50 ms
+                }, 50);
             };
     
             socket.on('data', (data) => {
@@ -135,7 +131,7 @@ class MosConnector {
         }).listen(appConfig.mediaPort, () => {console.log(`Media Server started on ${appConfig.mediaPort}`);});
     }
 
-    // Method to send data to the listener
+    // Method to send data to the MEDIA-listener
     async sendToMediaListener(payload) {
         try {
             if (this.mediaServerSocket) { // Ensure there is an active connection
