@@ -1,11 +1,11 @@
-
 import express from "express";
 import cors from "cors";
 import getServerIP from "./src/utilities/host-ip.js";
 import bodyParser from 'body-parser';
 import logger from "./src/utilities/logger.js";
 import routes from "./src/routes/routes.js";
-import mosClient from "./src/1-dal/mos-connector.js";
+import octopusService from "./src/services/octopus-service.js";
+
 const app = express(); 
 
 app.use(cors({origin: '*'}));
@@ -24,6 +24,5 @@ app.listen(port, () => {
     const host = getServerIP();
     logger(`Server service running on port ${port}`);
     logger(`Plugin url: http://${host}:${port}/index.html`)
-    
-    //processor.startMainProcess();
+    octopusService.initialize();
 });
