@@ -50,7 +50,7 @@ function createMosMessage(){
                 <itemID>${itemID}</itemID>
                 <itemSlug>${document.getElementById("nameInput").value.replace(/'/g, "")}</itemSlug>
                 <objID></objID>
-                <mosID>iNEWSMOS1</mosID>
+                <mosID>newsarts</mosID>
                 <mosItemBrowserProgID>alex</mosItemBrowserProgID>
                 <mosItemEditorProgID>alexE</mosItemEditorProgID>
                 <mosAbstract></mosAbstract>

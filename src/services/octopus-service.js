@@ -1,5 +1,6 @@
 import mosConnector from "../1-dal/mos-connector.js";
 import mosMediaConnector from "../1-dal/mos-media-connector.js";
+import sqlService from "./sql-service.js";
 import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
 
@@ -7,9 +8,10 @@ class OctopusProcessor {
     
     async initialize() {
         logger('Starting Octopus-connect 1.00...');
+        await sqlService.initialize();
         await mosConnector.connect();
         await mosMediaConnector.connect();
-        //await sqlService.initialize();
+        
     }
     
     mosRouter(msg, port) {
@@ -17,8 +19,8 @@ class OctopusProcessor {
         // if msg.mos.heartbeat exists - the !! convert it to "true"
         switch (true) {
             case !!msg.mos.heartbeat:
-                logger(port + " heartbeat");
-                this.sendHeatbeat(port);
+                //logger(port + " heartbeat");
+                this.sendHeartbeat(port);
                 break;
             case !!msg.mos.roCreate:
                 logger(port+ " roCreate");
@@ -33,6 +35,8 @@ class OctopusProcessor {
             case !!msg.mos.roStorySend:
                 logger(port+ " storySend");
                 this.sendAck(msg.mos.roStorySend.roID);
+                //logger(JSON.stringify(msg));
+
                 break;
             case !!msg.mos.roStoryMove:
                 logger(port+ " storyStoryMove");
@@ -44,11 +48,13 @@ class OctopusProcessor {
                 break;   
             case !!msg.mos.roStoryInsert:
                 logger(port+ " storyStoryInsert");
+                logger(JSON.stringify(msg));
                 this.sendAck(msg.mos.roStoryInsert.roID);
                 break;  
     
             case !!msg.mos.roStoryReplace:
                 logger(port+ " roStoryReplace");
+                logger(JSON.stringify(msg));
                 this.sendAck(msg.mos.roStoryReplace.roID);
                 break;   
             case !!msg.mos.roStoryAppend:
@@ -73,7 +79,7 @@ class OctopusProcessor {
         mosConnector.sendToListener(ack);
     }
     
-    sendHeatbeat(port){
+    sendHeartbeat(port){
         if(port === "listener"){
             mosConnector.sendToListener(ackService.constructHeartbeatMessage());
         }
@@ -81,7 +87,7 @@ class OctopusProcessor {
             mosMediaConnector.sendToMediaListener(ackService.constructHeartbeatMessage());
         }
     }
-    // If we recieve some unknown MOS object - we will try to find its roID and return acknoledge, to avoid message stuck and reconnection.
+    // If we receive some unknown MOS object - we will try to find its roID and return acknowledge, to avoid message stuck and reconnection.
     findRoID(obj) {
         if (obj.hasOwnProperty('roID')) {
             return obj.roID; // Return the roID value if found

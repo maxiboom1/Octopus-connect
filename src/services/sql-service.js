@@ -15,13 +15,13 @@ class SqlService {
         try {
             // Delete stories table in mssql 
             await this.deleteDBStories();
-            for (const [rundownStr] of Object.entries(appConfig.rundowns)) {
-                const assertedRDUid = await this.addDbRundown(rundownStr);
-                await inewsCache.initializeRundown(rundownStr,assertedRDUid, appConfig.rundowns[rundownStr].production);
-            }
-            await this.getAndStoreProductions();
+            // for (const [rundownStr] of Object.entries(appConfig.rundowns)) {
+            //     const assertedRDUid = await this.addDbRundown(rundownStr);
+            //     await inewsCache.initializeRundown(rundownStr,assertedRDUid, appConfig.rundowns[rundownStr].production);
+            // }
+            await this.getAndStoreProductions(); 
             await this.getAndStoreTemplates();
-            await this.hideUnwatchedRundowns();
+            //await this.hideUnwatchedRundowns();
             await itemsHash.resetDuplicates();
         }        
         catch (error) {

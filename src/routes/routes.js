@@ -57,4 +57,11 @@ router.get('/getdata', async (req, res) => {
   res.json(data);
 });
 
+// Get http://serverAddr:4001/api/getdata
+router.get('/debug/:data', async (req, res) => {
+  const data = req.params.data;
+  console.log(data);
+  res.json("ok");
+});
+
 export default router;
