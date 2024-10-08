@@ -1,6 +1,6 @@
 {
   "name": "octopus-connect",
-  "version": "1.7.1",
+  "version": "1.0",
   "description": "Connects to octopus server using MOS protocol. Provide GFX plugin",
   "license": "MIT",
   "author": {
