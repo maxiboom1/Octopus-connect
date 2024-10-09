@@ -33,7 +33,7 @@ class OctopusProcessor {
             
             // Story Events
             case !!msg.mos.roStorySend:
-                logger(port+ " storySend");
+                logger(port+ " storySend: " + JSON.stringify(msg));
                 this.sendAck(msg.mos.roStorySend.roID);
                 //logger(JSON.stringify(msg));
 
@@ -47,8 +47,7 @@ class OctopusProcessor {
                 this.sendAck(msg.mos.roStoryDelete.roID);
                 break;   
             case !!msg.mos.roStoryInsert:
-                logger(port+ " storyStoryInsert");
-                logger(JSON.stringify(msg));
+                logger(port+ " storyStoryInsert: " + JSON.stringify(msg));
                 this.sendAck(msg.mos.roStoryInsert.roID);
                 break;  
     

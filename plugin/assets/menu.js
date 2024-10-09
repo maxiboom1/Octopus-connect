@@ -155,14 +155,14 @@ async function mosMsgFromHost(event) {
     
     // User opened item 
     if (message.indexOf('<ncsItem>') !== -1){
-        
+        //await fetch(`${originUrl}/api/debug/${encodeURIComponent(message)}`, {method: 'GET',}); // DEBUG
         blocked = true;
         setTimeout(()=>{blocked = false;},50);
         const templateId = extractTagContent(message, "gfxTemplate");
         const gfxItem = extractTagContent(message, "gfxItem");
         const itemID = extractTagContent(message, "itemID");
         renderItem(templateId, gfxItem,itemID);
-        //await fetch(`${originUrl}/api/debug/${encodeURIComponent(message)}`, {method: 'GET',}); // DEBUG
+        
     }
     
     // User click apply/ok

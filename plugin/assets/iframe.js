@@ -44,20 +44,18 @@ function createMosMessage(){
     if(document.body.hasAttribute("data-itemID")){
         itemID = document.body.getAttribute('data-itemID');
     }
-    return `<mos>
+    return `<mos> 
         <ncsItem>
             <item>
                 <itemID>${itemID}</itemID>
                 <itemSlug>${document.getElementById("nameInput").value.replace(/'/g, "")}</itemSlug>
                 <objID></objID>
                 <mosID>newsarts</mosID>
-                <mosItemBrowserProgID>alex</mosItemBrowserProgID>
-                <mosItemEditorProgID>alexE</mosItemEditorProgID>
-                <mosAbstract></mosAbstract>
-                <group>1</group>
-                <gfxItem>${gfxItem}</gfxItem>
-                <gfxTemplate>${templateId}</gfxTemplate>
-                <gfxProduction>${productionId}</gfxProduction>
+                <mosExternalMetadata>
+                    <gfxItem>${gfxItem}</gfxItem>
+                    <gfxTemplate>${templateId}</gfxTemplate>
+                    <gfxProduction>${productionId}</gfxProduction>
+                </mosExternalMetadata>
             </item>
         </ncsItem>
     </mos>`;
