@@ -67,8 +67,9 @@ class OctopusProcessor {
                 this.sendAck(msg.mos.roDelete.roID);
                 break;      
             default:
-                logger('Unknown MOS message: ', msg);
-                const roID = findRoID(msg);
+                logger('Unknown MOS message: ', true);
+                console.log(JSON.stringify(msg));
+                const roID = this.findRoID(msg);
                 if(roID){this.sendAck(roID);}
         }
     }
@@ -95,7 +96,7 @@ class OctopusProcessor {
         for (const key in obj) {
             // Check if the key is an object itself (and not an array)
             if (typeof obj[key] === 'object' && obj[key] !== null) {
-                const foundRoID = findRoID(obj[key]); // Recursively search in child objects
+                const foundRoID = this.findRoID(obj[key]); // Recursively search in child objects
                 if (foundRoID !== undefined) {
                     return foundRoID; 
                 }
