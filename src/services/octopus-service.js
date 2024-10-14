@@ -3,6 +3,7 @@ import mosMediaConnector from "../1-dal/mos-media-connector.js";
 import sqlService from "./sql-service.js";
 import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
+import mosCommands from "../mos-commands/mos-cmds.js";
 
 class OctopusProcessor {
     
@@ -11,7 +12,7 @@ class OctopusProcessor {
         await sqlService.initialize();
         await mosConnector.connect();
         await mosMediaConnector.connect();
-        
+        mosConnector.sendToClient(mosCommands.roReqAll());
     }
     
     mosRouter(msg, port) {
@@ -22,6 +23,10 @@ class OctopusProcessor {
                 //logger(port + " heartbeat");
                 this.sendHeartbeat(port);
                 break;
+            case !!msg.mos.roListAll:
+                logger(port + " received roListAll");
+                this.roListAll(msg)
+                break;
             case !!msg.mos.roCreate:
                 logger(port+ " roCreate");
                 this.sendAck(msg.mos.roCreate.roID);
@@ -31,13 +36,12 @@ class OctopusProcessor {
                 this.sendAck(msg.mos.roReadyToAir.roID);
                 break;
             
-            // Story Events
             case !!msg.mos.roStorySend:
                 logger(port+ " storySend: " + JSON.stringify(msg));
                 this.sendAck(msg.mos.roStorySend.roID);
-                //logger(JSON.stringify(msg));
-
                 break;
+            
+            // Story Events while not using roElementAction    
             case !!msg.mos.roStoryMove:
                 logger(port+ " storyStoryMove");
                 this.sendAck(msg.mos.roStoryMove.roID);
@@ -50,7 +54,6 @@ class OctopusProcessor {
                 logger(port+ " storyStoryInsert: " + JSON.stringify(msg));
                 this.sendAck(msg.mos.roStoryInsert.roID);
                 break;  
-    
             case !!msg.mos.roStoryReplace:
                 logger(port+ " roStoryReplace");
                 logger(JSON.stringify(msg));
@@ -61,11 +64,17 @@ class OctopusProcessor {
                 this.sendAck(msg.mos.roStoryAppend.roID);
                 break;  
     
-    
             case !!msg.mos.roDelete:
                 logger(port+ " RoDelete");
                 this.sendAck(msg.mos.roDelete.roID);
+                break; 
+                
+            case !!msg.mos.roElementAction:
+                logger(port + " roElementAction");
+                console.log(msg.mos.roElementAction["@_operation"]);
+                this.sendAck(msg.mos.roElementAction.roID);
                 break;      
+            
             default:
                 logger('Unknown MOS message: ', true);
                 console.log(JSON.stringify(msg));
@@ -104,6 +113,15 @@ class OctopusProcessor {
         }
     
         return undefined;
+    }
+ 
+    roListAll(msg) {
+        const roIDs = [].concat(msg.mos.roListAll.roID); 
+        const roSlugs = [].concat(msg.mos.roListAll.roSlug); 
+        for (let i = 0; i < roIDs.length; i++) {
+            // So, Here we have roid and their slugs - now we need to write it to sql, and do roReq for each roID. 
+            console.log(roIDs[i], roSlugs[i]); 
+        }
     }
     
 }

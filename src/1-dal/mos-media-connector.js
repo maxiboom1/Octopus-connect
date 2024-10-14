@@ -11,7 +11,7 @@ class MosMediaConnector {
 
     async connect() {
         await this.startMediaClient();
-        await this.startMediaServer();
+        await this.startMediaServer(); // Ensure that the server starts before proceeding
     }
 
     startMediaClient() {
@@ -64,16 +64,22 @@ class MosMediaConnector {
         });
     }
 
-    async sendToMediaListener(payload) {
-        try {
-            if (this.mediaServerSocket) {
-                const buffer = Buffer.from(payload, 'ucs-2').swap16();
-                this.mediaServerSocket.write(buffer);
-            } else {
-                console.error('No active media-listener connection');
-            }
-        } catch (error) {
-            console.error('Error sending data to media listener:', error);
+    sendToMediaListener(payload) {
+        if (this.mediaServerSocket) {
+            const buffer = Buffer.from(payload);
+            this.mediaServerSocket.write(buffer);
+        } else {
+            console.error('No active media-listener connection');
+        }
+    }
+
+    sendToMediaClient(payload) {
+        if (this.mediaClient.readyState === 'open') {
+            const buffer = Buffer.from(payload);
+            this.mediaClient.write(buffer);
+            console.log('Data sent to media-client');
+        } else {
+            console.error('Media-client not connected');
         }
     }
 }
