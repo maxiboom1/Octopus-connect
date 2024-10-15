@@ -3,6 +3,7 @@ import appConfig from '../utilities/app-config.js';
 import parser from '../utilities/mos-parser.js';
 
 class MosConnector {
+    
     constructor() {
         this.client = new net.Socket();
         this.server = null;
@@ -10,12 +11,14 @@ class MosConnector {
     }
 
     async connect() {
-        await this.initiateConnection();
-        await this.startServer(); // Wait for the server to start
+        await this.startClient();
+        await this.startServer();
     }
-
-    initiateConnection() {
+    
+    async startClient() {
+        
         return new Promise((resolve, reject) => {
+            
             this.client.removeAllListeners();
 
             this.client.connect({ host: appConfig.octopusIpAddr, port: appConfig.rundownPort }, () => {
@@ -40,7 +43,7 @@ class MosConnector {
         });
     }
 
-    startServer() {
+    async startServer() {
         return new Promise((resolve, reject) => {
             this.server = net.createServer((socket) => {
                 this.serverSocket = socket;

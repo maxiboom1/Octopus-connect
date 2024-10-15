@@ -3,6 +3,7 @@ import appConfig from '../utilities/app-config.js';
 import parser from '../utilities/mos-parser.js';
 
 class MosMediaConnector {
+    
     constructor() {
         this.mediaClient = new net.Socket();
         this.mediaServer = null;
@@ -14,7 +15,7 @@ class MosMediaConnector {
         await this.startMediaServer(); // Ensure that the server starts before proceeding
     }
 
-    startMediaClient() {
+    async startMediaClient() {
         return new Promise((resolve, reject) => {
             this.mediaClient.removeAllListeners();
 
@@ -35,7 +36,7 @@ class MosMediaConnector {
         });
     }
 
-    startMediaServer() {
+    async startMediaServer() {
         return new Promise((resolve, reject) => {
             this.mediaServer = net.createServer((socket) => {
                 this.mediaServerSocket = socket;
