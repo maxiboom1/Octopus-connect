@@ -5,6 +5,7 @@ import octopusService from "../services/octopus-service.js"
 function parseMos(buffer, port) {
     try {
       const decodedData = buffer.toString();
+      //console.log("Mos string data: ", decodedData);
       const parser = new XMLParser({
           ignoreAttributes: false,   // Keep attributes
           attributeNamePrefix: '@_', // Prefix for attributes, adjust as needed
@@ -17,7 +18,7 @@ function parseMos(buffer, port) {
       octopusService.mosRouter(obj, port);
 
   } catch (error) {
-      console.error('Error parsing MOS message:', error);
+      console.error(`${port}: Error parsing MOS message: ${buffer.toString()}`, error);
   }
 }
 

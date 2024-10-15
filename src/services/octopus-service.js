@@ -27,6 +27,10 @@ class OctopusProcessor {
                 logger(port + " received roListAll");
                 this.roListAll(msg)
                 break;
+            case !!msg.mos.roList:
+                logger(port + " received roList");
+                this.roList(msg)
+                break;
             case !!msg.mos.roCreate:
                 logger(port+ " roCreate");
                 this.sendAck(msg.mos.roCreate.roID);
@@ -35,7 +39,6 @@ class OctopusProcessor {
                 logger(port+ " readyToAir");
                 this.sendAck(msg.mos.roReadyToAir.roID);
                 break;
-            
             case !!msg.mos.roStorySend:
                 logger(port+ " storySend: " + JSON.stringify(msg));
                 this.sendAck(msg.mos.roStorySend.roID);
@@ -63,12 +66,10 @@ class OctopusProcessor {
                 logger(port+ " roStoryAppend");
                 this.sendAck(msg.mos.roStoryAppend.roID);
                 break;  
-    
             case !!msg.mos.roDelete:
                 logger(port+ " RoDelete");
                 this.sendAck(msg.mos.roDelete.roID);
-                break; 
-                
+                break;     
             case !!msg.mos.roElementAction:
                 logger(port + " roElementAction");
                 console.log(msg.mos.roElementAction["@_operation"]);
@@ -120,8 +121,13 @@ class OctopusProcessor {
         const roSlugs = [].concat(msg.mos.roListAll.roSlug); 
         for (let i = 0; i < roIDs.length; i++) {
             // So, Here we have roid and their slugs - now we need to write it to sql, and do roReq for each roID. 
-            console.log(roIDs[i], roSlugs[i]); 
+            console.log(roIDs[i], roSlugs[i]);
+            mosConnector.sendToClient(mosCommands.roReq(roIDs[i])); 
         }
+    }
+
+    roList(msg){
+        //console.log("roList: ", msg.mos.roList.story)
     }
     
 }
