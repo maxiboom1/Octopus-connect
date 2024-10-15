@@ -13,15 +13,9 @@ class SqlService {
     
     async initialize(){
         try {
-            // Delete stories table in mssql 
             await this.deleteDBStories();
-            // for (const [rundownStr] of Object.entries(appConfig.rundowns)) {
-            //     const assertedRDUid = await this.addDbRundown(rundownStr);
-            //     await inewsCache.initializeRundown(rundownStr,assertedRDUid, appConfig.rundowns[rundownStr].production);
-            // }
             await this.getAndStoreProductions(); 
             await this.getAndStoreTemplates();
-            //await this.hideUnwatchedRundowns();
             await itemsHash.resetDuplicates();
         }        
         catch (error) {
@@ -40,13 +34,14 @@ class SqlService {
         }
     }
     
-    async addDbRundown(rundownStr) {
+    async addDbRundown(rundownStr,roID) {
         const values = {
             name: rundownStr,
             lastUpdate: createTick(),
-            production: appConfig.rundowns[rundownStr].production,
+            production: appConfig.production,
             enabled: 1,
-            tag: ""
+            tag: "",
+            roID:roID
         };
     
         const selectQuery = `
@@ -54,9 +49,9 @@ class SqlService {
         `;
     
         const insertQuery = `
-            INSERT INTO ngn_inews_rundowns (name, lastupdate, production, enabled, tag)
+            INSERT INTO ngn_inews_rundowns (name, lastupdate, production, enabled, tag, roID)
             OUTPUT INSERTED.uid
-            VALUES (@name, @lastUpdate, @production, @enabled, @tag);
+            VALUES (@name, @lastUpdate, @production, @enabled, @tag, @roID);
         `;
     
         const updateQuery = `
@@ -64,7 +59,8 @@ class SqlService {
             SET lastupdate = @lastUpdate, 
                 production = @production, 
                 enabled = @enabled, 
-                tag = @tag
+                tag = @tag,
+                roID = @roID
             WHERE name = @name;
         `;
     
@@ -136,33 +132,32 @@ class SqlService {
 
 // ****************************** STORY FUNCTIONS ****************************** //
 
-    async addDbStory(rundownStr, story, order){ //Story: {fileType,fileName,identifier,locator,storyName,modified,flags,pageNumber,attachments{gfxitem{props}}}
+    async addDbStory(rundownStr, story, order){
         const rundownMeta = await inewsCache.getRundownList(rundownStr);
         const values = {
-            name: story.storyName,
+            name: story.storySlug,
             lastupdate: createTick(),
             rundown: rundownMeta.uid,
             production: rundownMeta.production,
             ord: order,
             ordupdate: createTick(),
-            enabled: story.enabled,
-            floating: story.flags.floated,
+            enabled: 1,
+            floating: 0,
             tag: "",
-            identifier: story.identifier,
-            locator:story.locator,
-            number:story.pageNumber || "",
-            properties:""
+            number:story.storyNum || "",
+            properties:"",
+            storyID: story.storyID
         }
         const sqlQuery = `
-            INSERT INTO ngn_inews_stories (name, lastupdate, rundown, production, ord, ordupdate, enabled, floating, tag, identifier, locator,number, properties)
+            INSERT INTO ngn_inews_stories (name, lastupdate, rundown, production, ord, ordupdate, enabled, floating, tag, storyID, number, properties)
             OUTPUT inserted.uid
-            VALUES (@name, @lastupdate, @rundown, @production, @ord, @ordupdate, @enabled, @floating, @tag, @identifier, @locator, @number,@properties);`;            
+            VALUES (@name, @lastupdate, @rundown, @production, @ord, @ordupdate, @enabled, @floating, @tag, @storyID, @number,@properties);`;            
         try {
             const result = await db.execute(sqlQuery, values);
             const assertedStoryUid = result.recordset[0].uid;
             story.uid = assertedStoryUid;
             //await this.rundownLastUpdate(rundownStr);
-            logger(`Registering new story to ${rundownStr}: ${story.storyName}`); 
+            logger(`Registering new story to ${rundownStr}: ${story.storySlug}`);
             return assertedStoryUid;
         } catch (error) {
             console.error('Error executing query:', error); 

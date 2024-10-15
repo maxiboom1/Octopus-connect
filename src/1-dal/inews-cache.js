@@ -11,10 +11,10 @@ class InewsCache {
 
     // ********************* Init FUNCTIONS ********************** //
 
-    async initializeRundown(rundownStr,uid,production) {
+    async initializeRundown(rundownStr,uid,production,roID) {
         this.stories[rundownStr] = {};
         this.rundownsList[rundownStr] = {};
-        this.rundownsList[rundownStr] = {uid,production}
+        this.rundownsList[rundownStr] = {uid,production,roID}
     }
 
     async setProductions(productions){ // Expect [{ uid: '20006', name: 'TEST', properties: obj... }, {...}]
@@ -207,6 +207,13 @@ class InewsCache {
     async getProdIdByRundown(rundownStr){
         return this.rundownsList[rundownStr].production;
     }
+    async getDataByRundownStr(rundownStr){
+        return {
+                production: this.rundownsList[rundownStr].production,
+                rundown: this.rundownsList[rundownStr].uid
+        }
+
+    }
 
     async getRundownLength(rundownStr) {
         const rundown = this.stories[rundownStr];
@@ -220,7 +227,7 @@ class InewsCache {
     }
 
     async getData() {
-        return this.stories;
+        return this.rundownsList;
     }
     
 }

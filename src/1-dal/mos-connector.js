@@ -47,12 +47,19 @@ class MosConnector {
     
             this.client.once('close', () => {
                 console.log('MOS client disconnected. Trying to reconnect...');
+                this.client.destroy(); // Ensure socket is fully closed
                 setTimeout(() => { this.startClient(); }, 5000); // Reconnect logic
             });
     
             this.client.once('error', (err) => {
                 console.log(`Client Error: ${err.message}`);
-                reject(err); // Reject if there's an error
+                if (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') {
+                    console.log('Reconnecting due to network issue...');
+                    this.client.destroy(); // Explicitly close the socket on error
+                    setTimeout(() => { this.startClient(); }, 5000); // Attempt to reconnect after timeout
+                } else {
+                    reject(err); // Reject only if it's not a timeout or connection refused
+                }
             });
         });
     }
@@ -68,7 +75,7 @@ class MosConnector {
                     let endTagIndex;
                     
                     // Search for the `</mos>` delimiter in the buffer
-                    while ((endTagIndex = buffer.indexOf(delimiter)) !== -1) {
+                    while ((endTagIndex = buffer.indexOf(this.mosDelimiter)) !== -1) {
                         const completeMessage = Uint8Array.prototype.slice.call(buffer, 0, endTagIndex + this.mosDelimiter.length);
                         parser.parseMos(completeMessage, "listener");
                         buffer = Uint8Array.prototype.slice.call(buffer, endTagIndex + this.mosDelimiter.length);

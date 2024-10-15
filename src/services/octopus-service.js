@@ -1,9 +1,11 @@
 import mosConnector from "../1-dal/mos-connector.js";
 import mosMediaConnector from "../1-dal/mos-media-connector.js";
 import sqlService from "./sql-service.js";
+import inewsCache from "../1-dal/inews-cache.js";
 import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
 import mosCommands from "../mos-commands/mos-cmds.js";
+import appConfig from "../utilities/app-config.js";
 
 class OctopusProcessor {
     
@@ -116,20 +118,54 @@ class OctopusProcessor {
         return undefined;
     }
  
-    roListAll(msg) {
+    async roListAll(msg) {
         const roIDs = [].concat(msg.mos.roListAll.roID); 
         const roSlugs = [].concat(msg.mos.roListAll.roSlug); 
         for (let i = 0; i < roIDs.length; i++) {
-            // So, Here we have roid and their slugs - now we need to write it to sql, and do roReq for each roID. 
-            console.log(roIDs[i], roSlugs[i]);
-            mosConnector.sendToClient(mosCommands.roReq(roIDs[i])); 
+            const rundownStr = roSlugs[i];
+            const roID = roIDs[i];
+            const uid = await sqlService.addDbRundown(rundownStr,roID);
+            await inewsCache.initializeRundown(rundownStr,uid, appConfig.production, roID);
+            //mosConnector.sendToClient(mosCommands.roReq(roIDs[i])); 
         }
+
+        for (let i = 0; i < roIDs.length; i++) {
+            const roID = roIDs[i];
+            mosConnector.sendToClient(mosCommands.roReq(roID)); 
+        }
+
+        await sqlService.hideUnwatchedRundowns();
+
     }
 
-    roList(msg){
-        //console.log("roList: ", msg.mos.roList.story)
+    async roList(msg){
+        //console.log(msg)
+        const roSlug = msg.mos.roList.roSlug;
+        let ord = 0;
+        // Normalize `story` to always be an array
+        const stories = Array.isArray(msg.mos.roList.story) ? msg.mos.roList.story : [msg.mos.roList.story];        
+        for(const story of stories){
+            await this.handleNewStory(roSlug, story, ord);
+            ord++;
+        }
     }
     
+    async handleNewStory(rundownStr,story, ord) {        
+
+        //new story: name, float, number, production,rundown, ord, storyID
+        const assertedStoryUid = await sqlService.addDbStory(rundownStr, story, ord);
+        
+        // Save this story to cache
+        // await inewsCache.saveStory(rundownStr, listItem, index);
+
+        // await itemsService.registerStoryItems(rundownStr,listItem);
+
+        // await sqlService.rundownLastUpdate(rundownStr);
+
+        // await sqlService.storyLastUpdate(assertedStoryUid);
+
+    }
+
 }
 
 

@@ -52,6 +52,10 @@ class MosMediaConnector {
     
             this.mediaClient.once('error', (err) => {
                 console.log(`Media Client Error: ${err.message}`);
+                if (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') {
+                    console.log('Reconnecting due to network issue...');
+                    setTimeout(() => { this.startClient(); }, 5000); // Attempt to reconnect after timeout
+                }
                 reject(err); // Reject if there's an error
             });
         });

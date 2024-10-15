@@ -25,6 +25,16 @@ Buffer.from(string, 'utf16le').swap16();
 
 ## Change-log
 
+### V.0.0.2
+
+- DB struct change: 
+ngn_inews_rundowns ==> added "roID" property [bigint, allows nulls]
+ngn_inews_stories ==> deleted "identifier" prop. Renamed "locator" to "storyID" [nvarchar(20)]
+
+- Configured TCP connectors to handle data in UTF-8. So, Octopus must be set to UTF-8 mode - otherwise it won"t work.
+- Loads rundowns and its stories to DB. 
+
+
 ### V.0.0.1
 
 - Separated Mos connector for RO and Media MOS ports. 
