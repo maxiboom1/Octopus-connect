@@ -6,7 +6,7 @@ class InewsCache {
         this.productions = {}; //{name: {uid:uid, scenes:[]},name2:uid2, ... other productions...}
         this.templates = {}; // {templateUid: {templateName, production, icon}, ...}
         this.stories = {}; //{'rundownName': {'storyIdentifier': {storyProps...} } }; ==> see example at page footer
-        this.rundownsList = {}; // {rundownName:{uid,production}, otherRundownName:{...}, ...}
+        this.rundownsList = {}; // {rundownName:{uid,production,roID}, otherRundownName:{...}, ...}
     }
 
     // ********************* Init FUNCTIONS ********************** //
@@ -78,22 +78,6 @@ class InewsCache {
 
     // ********************* TEMPLATES FUNCTIONS ********************** //
 
-    // OLD
-    // async getTemplatesByProduction(productionUid) {
-    //     const filteredTemplates = [];
-      
-    //     for (const [templateName, templateData] of Object.entries(this.templates)) {
-    //       if (templateData.production === productionUid) {
-    //         const { uid, production, icon } = templateData;
-    //         const templateObject = { uid, production, icon, name: templateName };
-    //         filteredTemplates.push(templateObject);
-    //       }
-    //     }
-      
-    //     return filteredTemplates;
-    // }
-
-    // NEW
     async getTemplatesByProduction(productionUid) {
         const filteredTemplates = [];
     
@@ -195,6 +179,16 @@ class InewsCache {
     async getRundownUid(rundownStr){
         return this.rundownsList[rundownStr].uid;
     }
+    
+    async getRundownUidAndStrByRoID(roID) {
+        for (const rundownStr in this.rundownsList) {
+            const rundown = this.rundownsList[rundownStr];
+            if (rundown.roID === roID) {
+                return {uid:rundown.uid,rundownStr:rundownStr};
+            }
+        }
+        return null; 
+    }
 
     async getRundown(rundownStr) {
         return this.stories[rundownStr];
@@ -233,6 +227,11 @@ class InewsCache {
 
     async getStories() {
         return this.stories;
+    }
+    // UNMONITOR LINEUP FROM MOS
+    async deleteRundownFromCache(rundownStr){
+        delete this.stories[rundownStr];
+        delete this.rundownsList[rundownStr];
     }
     
 }

@@ -4,7 +4,7 @@ import processAndWriteFiles from "../utilities/file-processor.js";
 import inewsCache from "../1-dal/inews-cache.js";
 import itemsService from "./items-service.js";
 import itemsHash from "../1-dal/items-hashmap.js";
-import createTick from "../utilities/time-tick.js";
+import timeConvertors from "../utilities/time-tick.js";
 import logger from "../utilities/logger.js";
 
 class SqlService {
@@ -37,7 +37,7 @@ class SqlService {
     async addDbRundown(rundownStr,roID) {
         const values = {
             name: rundownStr,
-            lastUpdate: createTick(),
+            lastUpdate: timeConvertors.createTick(),
             production: appConfig.production,
             enabled: 1,
             tag: "",
@@ -135,11 +135,11 @@ class SqlService {
     async addDbStory(story){
         const values = {
             name: story.storySlug,
-            lastupdate: createTick(),
+            lastupdate: timeConvertors.createTick(),
             rundown: story.rundown,
             production: story.production,
             ord: story.ord,
-            ordupdate: createTick(),
+            ordupdate: timeConvertors.createTick(),
             enabled: 1,
             floating: 0,
             tag: "",
@@ -166,7 +166,7 @@ class SqlService {
         const values = {
             identifier:story.identifier, // Filter param from sql ("WHERE ")
             name:story.storyName,
-            lastupdate: createTick(),
+            lastupdate: timeConvertors.createTick(),
             locator: story.locator,
             enabled: story.enabled,
             floating: story.flags.floated,
@@ -201,7 +201,7 @@ class SqlService {
             ord: ord,
             locator: story.locator,
             identifier: story.identifier,
-            ordupdate: createTick(),
+            ordupdate: timeConvertors.createTick(),
         };
         
         const sqlQuery = `
@@ -250,11 +250,11 @@ class SqlService {
 
     async updateItem(rundownStr, item) { // Item: {uid, rundown, story, ord}
         const values = {
-            lastupdate: createTick(),
+            lastupdate: timeConvertors.createTick(),
             rundown: item.rundown,
             story: item.story,
             ord: item.ord,
-            ordupdate: createTick(),
+            ordupdate: timeConvertors.createTick(),
             uid: item.uid
         };
         const sqlQuery = `
@@ -281,7 +281,7 @@ class SqlService {
     async updateItemOrd(rundownStr, item) { // Item: {itemId, rundownId, storyId, ord}
         const values = {
             ord: item.ord,
-            ordupdate: createTick(),
+            ordupdate: timeConvertors.createTick(),
             uid: item.itemId
         };
         const sqlQuery = `
@@ -304,7 +304,7 @@ class SqlService {
 
     async updateItemSlug(rundownStr, item){// Item: {itemId, rundownId, storyId, itemSlug}
         const values = {
-            lastupdate: createTick(),
+            lastupdate: timeConvertors.createTick(),
             name:item.itemSlug,
             uid: item.itemId
         };
@@ -377,12 +377,12 @@ class SqlService {
     async storeNewItem(item) { // Expect: {name, data, scripts, templateId,productionId}
         const values = {
             name: item.name,
-            lastupdate: createTick(),
+            lastupdate: timeConvertors.createTick(),
             production: item.productionId,
             rundown: "",
             story: "",
             ord: "",
-            ordupdate: createTick(),
+            ordupdate: timeConvertors.createTick(),
             template: item.templateId,
             data: item.data,
             scripts: item.scripts,
@@ -431,7 +431,7 @@ class SqlService {
     async updateItemFromFront(item) { // Expect: {name, data, scripts, templateId, productionId, gfxItem}
         const values = {
             name: item.name,
-            lastupdate: createTick(),
+            lastupdate: timeConvertors.createTick(),
             production: item.productionId,
             template: item.templateId,
             data: item.data,
@@ -469,7 +469,7 @@ class SqlService {
             try {
                 const values = {
                     uid: rundownMeta.uid,
-                    lastupdate: createTick()
+                    lastupdate: timeConvertors.createTick()
                 }
                 const sqlQuery = `
                     UPDATE ngn_inews_rundowns
@@ -486,7 +486,7 @@ class SqlService {
         try {
             const values = {
                 uid: storyId,
-                lastupdate: createTick()
+                lastupdate: timeConvertors.createTick()
             }
             const sqlQuery = `
                 UPDATE ngn_inews_stories
@@ -538,8 +538,44 @@ class SqlService {
         }
     }
 
+// ********************* UN-MONITOR RUNDOWN FROM MOS ********************** //
+    async deleteDbRundown(uid,rundownStr) {
+        const values = {
+            uid:uid,
+            enabled: 0
+        };
+        const updateQuery = `
+            UPDATE ngn_inews_rundowns
+            SET enabled = @enabled
+            WHERE uid = @uid;
+        `;
+        try {
+            await db.execute(updateQuery, values);
+            logger(`Rundown un-monitored: ${rundownStr}`);
+            } catch (error) {
+            console.error('Error un-monitor rundown:', error);
+            }
+    }
 
-    
+    async deleteDbStoriesByRundownID(uid){
+        const query = `DELETE FROM ngn_inews_stories WHERE rundown = ${uid}`;
+        try {
+            await db.execute(query);
+            logger(`Cleared unmonitored stories`);
+            } catch (error) {
+            console.error('Error clearing un-monitored stories from SQL:', error);
+            }
+    }
+
+    async deleteDbItemsByRundownID(uid){
+        const query = `DELETE FROM ngn_inews_items WHERE rundown = ${uid}`;
+        try {
+            await db.execute(query);
+            logger(`Cleared unmonitored items`);
+            } catch (error) {
+            console.error('Error clearing un-monitored items from SQL:', error);
+            }
+    }
 }    
 
 const sqlService = new SqlService();

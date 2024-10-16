@@ -24,7 +24,7 @@ class OctopusProcessor {
         switch (true) {
             case !!msg.mos.heartbeat:
                 //logger(port + " heartbeat");
-                this.sendHeartbeat(port);
+                ackService.sendHeartbeat(port);
                 break;
             case !!msg.mos.roListAll:
                 logger(port + " received roListAll");
@@ -35,71 +35,57 @@ class OctopusProcessor {
                 this.roList(msg)
                 break;
             case !!msg.mos.roCreate:
-                logger(port+ " roCreate");
-                this.sendAck(msg.mos.roCreate.roID);
+                this.roCreate(msg);
                 break;
             case !!msg.mos.roReadyToAir:
                 logger(port+ " readyToAir");
-                this.sendAck(msg.mos.roReadyToAir.roID);
+                ackService.sendAck(msg.mos.roReadyToAir.roID);
                 break;
             case !!msg.mos.roStorySend:
                 logger(port+ " storySend: " + JSON.stringify(msg));
-                this.sendAck(msg.mos.roStorySend.roID);
+                ackService.sendAck(msg.mos.roStorySend.roID);
                 break;
             
             // Story Events while not using roElementAction    
             case !!msg.mos.roStoryMove:
                 logger(port+ " storyStoryMove");
-                this.sendAck(msg.mos.roStoryMove.roID);
+                ackService.sendAck(msg.mos.roStoryMove.roID);
                 break; 
             case !!msg.mos.roStoryDelete:
                 logger(port+ " roStoryDelete");
-                this.sendAck(msg.mos.roStoryDelete.roID);
+                ackService.sendAck(msg.mos.roStoryDelete.roID);
                 break;   
             case !!msg.mos.roStoryInsert:
                 logger(port+ " storyStoryInsert: " + JSON.stringify(msg));
-                this.sendAck(msg.mos.roStoryInsert.roID);
+                ackService.sendAck(msg.mos.roStoryInsert.roID);
                 break;  
             case !!msg.mos.roStoryReplace:
                 logger(port+ " roStoryReplace");
                 logger(JSON.stringify(msg));
-                this.sendAck(msg.mos.roStoryReplace.roID);
+                ackService.sendAck(msg.mos.roStoryReplace.roID);
                 break;   
             case !!msg.mos.roStoryAppend:
                 logger(port+ " roStoryAppend");
-                this.sendAck(msg.mos.roStoryAppend.roID);
+                ackService.sendAck(msg.mos.roStoryAppend.roID);
                 break;  
             case !!msg.mos.roDelete:
-                logger(port+ " RoDelete");
-                this.sendAck(msg.mos.roDelete.roID);
+                this.roDelete(msg);
                 break;     
+            
             case !!msg.mos.roElementAction:
                 logger(port + " roElementAction");
                 console.log(msg.mos.roElementAction["@_operation"]);
-                this.sendAck(msg.mos.roElementAction.roID);
+                ackService.sendAck(msg.mos.roElementAction.roID);
                 break;      
             
             default:
                 logger('Unknown MOS message: ', true);
                 console.log(JSON.stringify(msg));
                 const roID = this.findRoID(msg);
-                if(roID){this.sendAck(roID);}
+                if(roID){ackService.sendAck(roID);}
         }
     }
-    
-    sendAck(roID){
-        const ack = ackService.constructRoAckMessage(roID);
-        mosConnector.sendToListener(ack);
-    }
-    
-    sendHeartbeat(port){
-        if(port === "listener"){
-            mosConnector.sendToListener(ackService.constructHeartbeatMessage());
-        }
-        if(port === "media-listener"){
-            mosMediaConnector.sendToMediaListener(ackService.constructHeartbeatMessage());
-        }
-    }
+
     // If we receive some unknown MOS object - we will try to find its roID and return acknowledge, to avoid message stuck and reconnection.
     findRoID(obj) {
         if (obj.hasOwnProperty('roID')) {
@@ -139,8 +125,6 @@ class OctopusProcessor {
             mosConnector.sendToClient(mosCommands.roReq(roID)); 
         }
 
-       
-
     }
 
     async roList(msg){
@@ -157,7 +141,40 @@ class OctopusProcessor {
         }
 
     }
-    
+
+    async roCreate(msg){
+        const rundownStr = msg.mos.roCreate.roSlug;
+        const roID = msg.mos.roCreate.roID;
+        
+        // Register rundown in DB and cache
+        const uid = await sqlService.addDbRundown(rundownStr,roID);
+        await inewsCache.initializeRundown(rundownStr,uid, appConfig.production, roID);
+        
+        //Send ack to NCS
+        ackService.sendAck(msg.mos.roCreate.roID);
+        logger(`roCreate: New rundown registered  - ${rundownStr}` );
+        
+        // Send roReq request
+        mosConnector.sendToClient(mosCommands.roReq(roID)); 
+    }
+
+    async roDelete(msg){
+        const {uid,rundownStr} = await inewsCache.getRundownUidAndStrByRoID(msg.mos.roDelete.roID);
+        
+        // Delete rundown, its stories and items from DB
+        await sqlService.deleteDbRundown(uid, rundownStr);
+        await sqlService.deleteDbStoriesByRundownID(uid);
+        await sqlService.deleteDbItemsByRundownID(uid);
+        
+        // Delete rundown stories and items from cache
+        await inewsCache.deleteRundownFromCache(rundownStr);
+        
+        //Send ack to NCS
+        ackService.sendAck(msg.mos.roDelete.roID);
+        logger(`roDelete: ${rundownStr} was completely cleared from anywhere!` );
+        
+    }
+
     async handleNewStory(story) {        
         
         // Add props to story
