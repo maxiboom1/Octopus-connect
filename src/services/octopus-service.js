@@ -73,8 +73,11 @@ class OctopusProcessor {
                 break;     
             
             case !!msg.mos.roElementAction:
-                logger(port + " roElementAction");
-                console.log(msg.mos.roElementAction["@_operation"]);
+                
+                const action = msg.mos.roElementAction["@_operation"];
+                if(action === "REPLACE"){
+                    this.storyReplace(msg);
+                }
                 ackService.sendAck(msg.mos.roElementAction.roID);
                 break;      
             
@@ -194,7 +197,7 @@ class OctopusProcessor {
         await sqlService.storyLastUpdate(story.uid);
 
     }
-
+    // Adds to story uid, production, normalizing item for array
     async constructStory(story){
         const rundownMeta = await inewsCache.getRundownList(story.rundownStr);
         story.item = Array.isArray(story.item) ? story.item : [story.item];
@@ -202,7 +205,29 @@ class OctopusProcessor {
         story.production = rundownMeta.production;
         return story;
     }
+    // *************************************** Rundowns Element actions *************************************** // 
 
+    async storyReplace(msg){
+        const roID = msg.mos.roElementAction.roID;
+        let story = msg.mos.roElementAction.element_source.story;
+        story.rundownStr = inewsCache.getRundownSlugByStoryID(story.storyID);
+        story = await this.constructStory(story);
+        story.uid = await inewsCache.getStoryUid(story.rundownStr, story.storyID);
+        // Updates story in SQL
+        await sqlService.modifyDbStory(story);
+        
+        // Update items in SQL
+        await itemsService.registerStoryItems(story);
+        
+        // Update cached story
+        await inewsCache.saveStory(story);
+
+        // Update last updates to story and rundown
+        await sqlService.rundownLastUpdate(story.rundownStr);
+        await sqlService.storyLastUpdate(story.uid);
+        
+        ackService.sendAck(roID);
+    }
 }
 
 

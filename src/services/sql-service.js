@@ -162,36 +162,23 @@ class SqlService {
         }
     }
 
-    async modifyDbStory(rundownStr,story){ //Story: {fileType,fileName,identifier,locator,storyName,modified,flags,attachments{gfxitem{props}}}
+    async modifyDbStory(story){ 
         const values = {
-            identifier:story.identifier, // Filter param from sql ("WHERE ")
-            name:story.storyName,
+            name:story.storySlug,
             lastupdate: timeConvertors.createTick(),
-            locator: story.locator,
-            enabled: story.enabled,
-            floating: story.flags.floated,
-            number:story.pageNumber || ""
-
+            number:story.pageNum || "",
+            storyID:story.storyID
         };
         const sqlQuery = `
             UPDATE ngn_inews_stories
-            SET name = @name, lastupdate = @lastupdate, locator = @locator, enabled = @enabled, floating = @floating, number=@number
-            WHERE identifier = @identifier;
+            SET name = @name, lastupdate = @lastupdate, number=@number
+            WHERE storyID = @storyID;
         `;
         
         try {
             await db.execute(sqlQuery, values);
-            await this.rundownLastUpdate(rundownStr);
-            let attachments = {};
-            // Check if attachments exists in cache OR inews story. If exists => compare.
-            if(Object.keys(story.attachments).length !== 0 || await inewsCache.hasAttachments(rundownStr,story.identifier)){ 
-                attachments = await itemsService.compareItems(rundownStr,story); // Process attachments
-            }
-            logger(`Story modified in ${rundownStr}: ${story.storyName}`);
-            return attachments;
-
         } catch (error) {
-            console.error('Error executing query:', error);  
+            console.error(`Error updating story ${story.storySlug} in DB:`, error);  
         }
 
     }
@@ -267,7 +254,7 @@ class SqlService {
             const result =await db.execute(sqlQuery, values);
             // ADD HERE STORY UPDATE
             if(result.rowsAffected[0] > 0){
-                logger(`Registered new GFX item in ${rundownStr}, story ${item.story}`); 
+                logger(`GFX item in ${rundownStr}, story ${item.story} updated`); 
             } else {
                 logger(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
             }

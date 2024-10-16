@@ -100,14 +100,14 @@ class InewsCache {
         }
     }
 
-    async getStoryUid(rundownStr, identifier){
-        if (this.isStoryExists(rundownStr, identifier)) {
-            return this.stories[rundownStr][identifier].uid;
+    async getStoryUid(rundownStr, storyID){
+        if (this.isStoryExists(rundownStr, storyID)) {
+            return this.stories[rundownStr][storyID].uid;
         }
     }
 
-    async isStoryExists(rundownStr, identifier) {
-        const storyExists = !!this.stories[rundownStr] && !!this.stories[rundownStr][identifier];
+    async isStoryExists(rundownStr, storyID) {
+        const storyExists = !!this.stories[rundownStr] && !!this.stories[rundownStr][storyID];
         return storyExists;
     }
 
@@ -219,6 +219,15 @@ class InewsCache {
         const rundown = this.stories[rundownStr];
         if (!rundown) return [];
         return Object.keys(rundown);
+    }
+
+    getRundownSlugByStoryID(storyID) {
+        for (const rundownSlug in this.stories) {
+            if (this.stories[rundownSlug][storyID]) {
+                return rundownSlug; // Return the rundownSlug if storyID is found
+            }
+        }
+        return null; 
     }
 
     async getRundowns() {

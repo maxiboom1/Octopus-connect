@@ -25,6 +25,11 @@ Buffer.from(string, 'utf16le').swap16();
 
 ## Change-log
 
+### V.0.0.5
+
+- Story REPLACE event complete. The strategy is straight&forward for now - overwrite the whole story, including items with replaced story. Thats means all the items order changes handling is included. 
+
+
 ### V.0.0.4
 
 - Handle roDelete done - deletes from SQL: rundown(rundown not deleted, but disabled), its stories and items (all by rundown uid). The same with cache - complete clear rundown data.
