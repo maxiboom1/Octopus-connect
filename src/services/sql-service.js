@@ -132,14 +132,13 @@ class SqlService {
 
 // ****************************** STORY FUNCTIONS ****************************** //
 
-    async addDbStory(rundownStr, story, order){
-        const rundownMeta = await inewsCache.getRundownList(rundownStr);
+    async addDbStory(story){
         const values = {
             name: story.storySlug,
             lastupdate: createTick(),
-            rundown: rundownMeta.uid,
-            production: rundownMeta.production,
-            ord: order,
+            rundown: story.rundown,
+            production: story.production,
+            ord: story.ord,
             ordupdate: createTick(),
             enabled: 1,
             floating: 0,
@@ -156,8 +155,7 @@ class SqlService {
             const result = await db.execute(sqlQuery, values);
             const assertedStoryUid = result.recordset[0].uid;
             story.uid = assertedStoryUid;
-            //await this.rundownLastUpdate(rundownStr);
-            logger(`Registering new story to ${rundownStr}: ${story.storySlug}`);
+            logger(`Registering new story to ${story.rundownStr}: ${story.storySlug}`);
             return assertedStoryUid;
         } catch (error) {
             console.error('Error executing query:', error); 
@@ -250,14 +248,14 @@ class SqlService {
 
 // ********************* ITEMS FUNCTIONS ********************** //
 
-    async updateItem(rundownStr, item) { // Item: {itemId, rundownId, storyId, ord}
+    async updateItem(rundownStr, item) { // Item: {uid, rundown, story, ord}
         const values = {
             lastupdate: createTick(),
-            rundown: item.rundownId,
-            story: item.storyId,
+            rundown: item.rundown,
+            story: item.story,
             ord: item.ord,
             ordupdate: createTick(),
-            uid: item.itemId
+            uid: item.uid
         };
         const sqlQuery = `
             UPDATE ngn_inews_items SET 
@@ -269,9 +267,9 @@ class SqlService {
             const result =await db.execute(sqlQuery, values);
             // ADD HERE STORY UPDATE
             if(result.rowsAffected[0] > 0){
-                logger("Registered new GFX item ");
+                logger(`Registered new GFX item in ${rundownStr}, story ${item.story}`); 
             } else {
-                logger(`WARNING! GFX ${item.itemId} [${item.ord}] in ${rundownStr}, story num ${item.ord} doesn't exists in DB`);
+                logger(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
             }
 
         } catch (error) {

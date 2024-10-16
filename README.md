@@ -25,6 +25,12 @@ Buffer.from(string, 'utf16le').swap16();
 
 ## Change-log
 
+### V.0.0.3
+
+- Added cache-scheme.js to describe data structures.
+- Modified handleNewStory (done), with constructStory helper func. All props stored in story obj, so mostly we pass only "story". The inews cache and items service also adapted to this new optimization. 
+- Handling new rundowns, new story and new items from roReq and roReqAll done. 
+
 ### V.0.0.2
 
 - DB struct change: 

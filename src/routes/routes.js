@@ -52,8 +52,14 @@ router.post('/update-item', async (req, res) => {
 });
 
 // Get http://serverAddr:4001/api/getdata
-router.get('/getdata', async (req, res) => {
-  const data = await inewsCache.getData();
+router.get('/getrundowns', async (req, res) => {
+  const data = await inewsCache.getRundowns();
+  res.json(data);
+});
+
+// Get http://serverAddr:4001/api/getstories
+router.get('/getstories', async (req, res) => {
+  const data = await inewsCache.getStories();
   res.json(data);
 });
 

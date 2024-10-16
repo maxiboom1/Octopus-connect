@@ -127,17 +127,17 @@ class InewsCache {
         return storyExists;
     }
 
-    async saveStory(rundownStr, story, ord) {
+    async saveStory(story) {
 
-        this.stories[rundownStr][story.identifier] = {
-            storyName: story.storyName,
-            locator: story.locator,
-            flags: story.flags,
-            attachments: story.attachments,
-            ord: ord,
+        this.stories[story.rundownStr][story.storyID] = {
             uid:story.uid,
-            enabled:story.enabled,
-            pageNumber:story.pageNumber
+            storyID:story.storyID,
+            name: story.storySlug,
+            number: story.storyNum,
+            ord: story.ord,
+            production: story.production,
+            rundown:story.rundown,
+            item: story.item
         };
     }
 
@@ -207,6 +207,7 @@ class InewsCache {
     async getProdIdByRundown(rundownStr){
         return this.rundownsList[rundownStr].production;
     }
+
     async getDataByRundownStr(rundownStr){
         return {
                 production: this.rundownsList[rundownStr].production,
@@ -226,8 +227,12 @@ class InewsCache {
         return Object.keys(rundown);
     }
 
-    async getData() {
+    async getRundowns() {
         return this.rundownsList;
+    }
+
+    async getStories() {
+        return this.stories;
     }
     
 }
@@ -235,31 +240,3 @@ class InewsCache {
 const inewsCache = new InewsCache();
 
 export default inewsCache;
-
-/*
-this.stories example
-{
-    "SHOW.ALEX.rundown2": {
-        "1689F6A3": {
-            "storyName": "anveks4ever",
-            "locator": "000308ED:65930449",
-            "flags": {
-                "floated": false
-            },
-            "attachments": {
-                "103": {
-                    "gfxTemplate": 10005,
-                    "gfxProduction": 2,
-                    "itemSlug": "I like hard OOP",
-                    "ord": 2
-                },
-                other items...
-            },
-            "ord": 0,
-            "uid": "41999"
-        },
-        other stories...
-    }
-    other rundowns...
-}
-*/
