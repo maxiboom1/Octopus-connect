@@ -1,6 +1,6 @@
 import replaceAndNormalizeSpaces from "../utilities/normalize.js";
 
-class InewsCache {
+class Cache {
     
     constructor() {
         this.productions = {}; //{name: {uid:uid, scenes:[]},name2:uid2, ... other productions...}
@@ -245,6 +245,6 @@ class InewsCache {
     
 }
 
-const inewsCache = new InewsCache();
+const cache = new Cache();
 
-export default inewsCache;
+export default cache;

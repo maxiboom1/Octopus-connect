@@ -1,7 +1,7 @@
 import appConfig from "../utilities/app-config.js";
 import db from "../1-dal/sql.js";
 import processAndWriteFiles from "../utilities/file-processor.js";
-import inewsCache from "../1-dal/inews-cache.js";
+import cache from "../1-dal/cache.js";
 import itemsService from "./items-service.js";
 import itemsHash from "../1-dal/items-hashmap.js";
 import timeConvertors from "../utilities/time-convertors.js";
@@ -87,7 +87,7 @@ class SqlService {
         try {
             const sql = `SELECT uid, name,properties FROM ngn_productions WHERE enabled = 1`;
             const productions = await db.execute(sql);
-            await inewsCache.setProductions(productions);
+            await cache.setProductions(productions);
             logger(`Loaded productions from SQL`);
         } catch (error) {
             console.error('Error loading productions from SQL:', error);
@@ -104,7 +104,7 @@ class SqlService {
             
             //{ uid, name, production , icon}
             const templatesWithoutHtml = await processAndWriteFiles(templates);
-            await inewsCache.setTemplates(templatesWithoutHtml);
+            await cache.setTemplates(templatesWithoutHtml);
             logger(`Loaded templates from SQL`);
         } catch (error) {
             console.error('Error loading templates from SQL:', error);
@@ -116,7 +116,7 @@ class SqlService {
         try {
             const sql = `SELECT * FROM ngn_inews_rundowns`;
             const result = await db.execute(sql);
-            const cacheRundowns = await inewsCache.getRundownsArr(); // Get rundowns from config.json
+            const cacheRundowns = await cache.getRundownsArr(); // Get rundowns from config.json
             const unwatchedRundowns = result.filter(item => !cacheRundowns.includes(item.name)).map(item => item.uid);
             for(const r of unwatchedRundowns){
                 const values = {uid: r};
@@ -208,7 +208,7 @@ class SqlService {
 
     async deleteStory(rundownStr,identifier) {
         try {
-            const story = await inewsCache.getStory(rundownStr,identifier);
+            const story = await cache.getStory(rundownStr,identifier);
             const values = {identifier: identifier};
             const sqlQuery = `DELETE FROM ngn_inews_stories WHERE identifier = @identifier;`;
             await db.execute(sqlQuery, values);
@@ -219,7 +219,7 @@ class SqlService {
                 for(const item of Object.keys(story.attachments)){
                     await this.deleteItem(rundownStr,{
                         itemId: item, // item id to delete
-                        rundownId:await inewsCache.getRundownUid(rundownStr), 
+                        rundownId:await cache.getRundownUid(rundownStr), 
                         storyId:story.uid, 
                     }); 
                     itemsService.clearAllDuplicates(item);
@@ -452,7 +452,7 @@ class SqlService {
 // ********************* LAST UPDATE && ORD LAST UPDATE FUNCTIONS ********************** //
     
     async rundownLastUpdate(rundownStr){
-            const rundownMeta = await inewsCache.getRundownList(rundownStr);
+            const rundownMeta = await cache.getRundownList(rundownStr);
             try {
                 const values = {
                     uid: rundownMeta.uid,

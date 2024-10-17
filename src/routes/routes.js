@@ -1,21 +1,19 @@
 import express from "express";
 import sqlService from "../services/sql-service.js";
-import inewsCache from "../1-dal/inews-cache.js";
-import itemsService from "../services/items-service.js";
-import itemsHash from "../1-dal/items-hashmap.js";
+import cache from "../1-dal/cache.js";
 
 const router = express.Router();
 
 // Get http://serverAddr:4001/api/productions
 router.get('/productions', async (req, res) => {
-  const productions = await inewsCache.getProductionsArr();
+  const productions = await cache.getProductionsArr();
   res.json(productions);
 });
 
 // Get http://serverAddr:4001/api/templates
 router.get('/templates/:uid', async (req, res) => {
   const productionUid = req.params.uid;
-  const templates = await inewsCache.getTemplatesByProduction(productionUid);
+  const templates = await cache.getTemplatesByProduction(productionUid);
   res.json(templates);
 });
 
@@ -52,13 +50,13 @@ router.post('/update-item', async (req, res) => {
 
 // Get http://serverAddr:4001/api/getdata
 router.get('/getrundowns', async (req, res) => {
-  const data = await inewsCache.getRundowns();
+  const data = await cache.getRundowns();
   res.json(data);
 });
 
 // Get http://serverAddr:4001/api/getstories
 router.get('/getstories', async (req, res) => {
-  const data = await inewsCache.getStories();
+  const data = await cache.getStories();
   res.json(data);
 });
 

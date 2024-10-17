@@ -1,7 +1,7 @@
 import mosConnector from "../1-dal/mos-connector.js";
 import mosMediaConnector from "../1-dal/mos-media-connector.js";
 import sqlService from "./sql-service.js";
-import inewsCache from "../1-dal/inews-cache.js";
+import cache from "../1-dal/cache.js";
 import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
 import mosCommands from "../utilities/mos-cmds.js";
@@ -117,7 +117,7 @@ class OctopusProcessor {
             const rundownStr = roSlugs[i];
             const roID = roIDs[i];
             const uid = await sqlService.addDbRundown(rundownStr,roID);
-            await inewsCache.initializeRundown(rundownStr,uid, appConfig.production, roID);
+            await cache.initializeRundown(rundownStr,uid, appConfig.production, roID);
         }
         // Now, when cache is updated, hide unwatched rundowns in sql
         await sqlService.hideUnwatchedRundowns();
@@ -151,7 +151,7 @@ class OctopusProcessor {
         
         // Register rundown in DB and cache
         const uid = await sqlService.addDbRundown(rundownStr,roID);
-        await inewsCache.initializeRundown(rundownStr,uid, appConfig.production, roID);
+        await cache.initializeRundown(rundownStr,uid, appConfig.production, roID);
         
         //Send ack to NCS
         ackService.sendAck(msg.mos.roCreate.roID);
@@ -162,7 +162,7 @@ class OctopusProcessor {
     }
 
     async roDelete(msg){
-        const {uid,rundownStr} = await inewsCache.getRundownUidAndStrByRoID(msg.mos.roDelete.roID);
+        const {uid,rundownStr} = await cache.getRundownUidAndStrByRoID(msg.mos.roDelete.roID);
         
         // Delete rundown, its stories and items from DB
         await sqlService.deleteDbRundown(uid, rundownStr);
@@ -170,7 +170,7 @@ class OctopusProcessor {
         await sqlService.deleteDbItemsByRundownID(uid);
         
         // Delete rundown stories and items from cache
-        await inewsCache.deleteRundownFromCache(rundownStr);
+        await cache.deleteRundownFromCache(rundownStr);
         
         //Send ack to NCS
         ackService.sendAck(msg.mos.roDelete.roID);
@@ -187,7 +187,7 @@ class OctopusProcessor {
         story.uid = await sqlService.addDbStory(story);
         
         // Save story to cache
-        await inewsCache.saveStory(story);
+        await cache.saveStory(story);
 
         // Save Items of the story to DB
         await itemsService.registerStoryItems(story);
@@ -197,9 +197,10 @@ class OctopusProcessor {
         await sqlService.storyLastUpdate(story.uid);
 
     }
-    // Adds to story uid, production, normalizing item for array
+    
+    // Adds to story uid, production, normalizing item for array. Story obj must have "rundownStr" prop!
     async constructStory(story){
-        const rundownMeta = await inewsCache.getRundownList(story.rundownStr);
+        const rundownMeta = await cache.getRundownList(story.rundownStr);
         story.item = Array.isArray(story.item) ? story.item : [story.item];
         story.rundown = rundownMeta.uid;
         story.production = rundownMeta.production;
@@ -210,9 +211,9 @@ class OctopusProcessor {
     async storyReplace(msg){
         const roID = msg.mos.roElementAction.roID;
         let story = msg.mos.roElementAction.element_source.story;
-        story.rundownStr = inewsCache.getRundownSlugByStoryID(story.storyID);
+        story.rundownStr = cache.getRundownSlugByStoryID(story.storyID);
         story = await this.constructStory(story);
-        story.uid = await inewsCache.getStoryUid(story.rundownStr, story.storyID);
+        story.uid = await cache.getStoryUid(story.rundownStr, story.storyID);
         // Updates story in SQL
         await sqlService.modifyDbStory(story);
         
@@ -220,7 +221,7 @@ class OctopusProcessor {
         await itemsService.registerStoryItems(story);
         
         // Update cached story
-        await inewsCache.saveStory(story);
+        await cache.saveStory(story);
 
         // Update last updates to story and rundown
         await sqlService.rundownLastUpdate(story.rundownStr);
