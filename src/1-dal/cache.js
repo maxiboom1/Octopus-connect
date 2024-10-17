@@ -94,23 +94,18 @@ class Cache {
 
     // ********************* STORY FUNCTIONS ********************** //
 
-    async getStory(rundownStr, identifier) {
-        if (this.isStoryExists(rundownStr, identifier)) {
-            return this.stories[rundownStr][identifier];
-        }
-    }
-
+    // Octopus
     async getStoryUid(rundownStr, storyID){
         if (this.isStoryExists(rundownStr, storyID)) {
             return this.stories[rundownStr][storyID].uid;
         }
     }
-
+    // Octopus
     async isStoryExists(rundownStr, storyID) {
         const storyExists = !!this.stories[rundownStr] && !!this.stories[rundownStr][storyID];
         return storyExists;
     }
-
+    // Octopus
     async saveStory(story) {
 
         this.stories[story.rundownStr][story.storyID] = {
@@ -124,54 +119,18 @@ class Cache {
             item: story.item
         };
     }
-
-    async reorderStory(rundownStr, story, ord) {
-        this.stories[rundownStr][story.identifier].locator = story.locator;
-        this.stories[rundownStr][story.identifier].ord = ord;
+    // Octopus
+    modifyStoryOrd(rundownStr, storyID, ord){
+        this.stories[rundownStr][storyID].ord = ord;
+    }
+    // Octopus
+    getStoryOrd(rundownStr, storyID){
+        return this.stories[rundownStr][storyID].ord
     }
 
-    async modifyStory(rundownStr, story) {
-        this.stories[rundownStr][story.identifier].storyName = story.storyName;
-        this.stories[rundownStr][story.identifier].locator = story.locator;
-        this.stories[rundownStr][story.identifier].flags = story.flags;
-        this.stories[rundownStr][story.identifier].attachments = story.attachments;
-        this.stories[rundownStr][story.identifier].pageNumber = story.pageNumber;
-    }
-
-    async deleteStory(rundownStr, identifier) {
-        delete this.stories[rundownStr][identifier];
-    }
-
-    async hasAttachments(rundownStr, identifier) {
-        // Check if the story and identifier exist
-        if (this.stories[rundownStr] && this.stories[rundownStr][identifier]) {
-            const attachments = this.stories[rundownStr][identifier].attachments;
-            if (Object.keys(attachments).length === 0) return false;
-            return true;
-        }
-    }
-
-    async getStoryAttachments(rundownStr,identifier){
-        if (this.stories[rundownStr] && this.stories[rundownStr][identifier]) {
-            //return this.stories[rundownStr][identifier].attachments;
-            return {...this.stories[rundownStr][identifier].attachments};
-        }
-    }
-
-    async setStoryAttachments(rundownStr,identifier,attachments){
-        if (this.stories[rundownStr] && this.stories[rundownStr][identifier]) {
-            this.stories[rundownStr][identifier].attachments = attachments;
-        }
-    }
-
-    async deleteSingleAttachment(rundownStr,identifier,attachmentId){
-        if (this.stories[rundownStr] && this.stories[rundownStr][identifier] && this.stories[rundownStr][identifier].attachments[attachmentId]) {
-            delete this.stories[rundownStr][identifier].attachments[attachmentId];
-        }
-    }
-    
     // ********************* RUNDOWNS FUNCTIONS ********************** //
-
+    
+    // Octopus - used to define which lineups is cached in hideUnwatched()
     async getRundownsArr(){ // Return arr of rundownStr's 
         return Object.keys(this.rundownsList);
     }
@@ -179,7 +138,7 @@ class Cache {
     async getRundownUid(rundownStr){
         return this.rundownsList[rundownStr].uid;
     }
-    
+    // Octopus
     async getRundownUidAndStrByRoID(roID) {
         for (const rundownStr in this.rundownsList) {
             const rundown = this.rundownsList[rundownStr];
@@ -191,7 +150,7 @@ class Cache {
     }
 
     async getRundown(rundownStr) {
-        return this.stories[rundownStr];
+        return JSON.parse(JSON.stringify(this.stories[rundownStr]));
     }
 
     async getRundownList(rundownStr){
@@ -215,16 +174,20 @@ class Cache {
         return rundown ? Object.keys(rundown).length : 0;
     }
 
-    async getRundownIdentifiersList(rundownStr) {
-        const rundown = this.stories[rundownStr];
-        if (!rundown) return [];
-        return Object.keys(rundown);
-    }
-
+    // Octopus
     getRundownSlugByStoryID(storyID) {
         for (const rundownSlug in this.stories) {
             if (this.stories[rundownSlug][storyID]) {
                 return rundownSlug; // Return the rundownSlug if storyID is found
+            }
+        }
+        return null; 
+    }
+    // Octopus
+    getRundownSlugByRoID(roID) {
+        for (const rundownSlug in this.rundownsList) {
+            if (this.rundownsList[rundownSlug].roID === roID) {
+                return rundownSlug; // Return the rundownSlug if roID is found
             }
         }
         return null; 

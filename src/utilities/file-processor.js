@@ -30,7 +30,9 @@ async function processAndWriteFiles(templates) {
         const filePath = path.join(templatesFolder, `${uid}.html`);
         await fsPromises.writeFile(filePath, injectedHtml, 'utf-8');
         delete template.source;
-        logger(`Loaded ${name} template`);
+        if (!appConfig.debugMode){
+            logger(`Loaded ${name} template12`);
+        }
     }
 
     return templates;

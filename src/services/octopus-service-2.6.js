@@ -8,7 +8,6 @@ import mosCommands from "../utilities/mos-cmds.js";
 import appConfig from "../utilities/app-config.js";
 import itemsService from "./items-service.js";
 
-// MOS 2.8.5
 class OctopusProcessor {
     
     async initialize() {
@@ -47,30 +46,38 @@ class OctopusProcessor {
                 ackService.sendAck(msg.mos.roStorySend.roID);
                 break;
             
+            // Story Events while not using roElementAction    
+            case !!msg.mos.roStoryMove:
+                logger(port+ " storyStoryMove");
+                ackService.sendAck(msg.mos.roStoryMove.roID);
+                break; 
+            case !!msg.mos.roStoryDelete:
+                logger(port+ " roStoryDelete");
+                ackService.sendAck(msg.mos.roStoryDelete.roID);
+                break;   
+            case !!msg.mos.roStoryInsert:
+                logger(port+ " storyStoryInsert: " + JSON.stringify(msg));
+                ackService.sendAck(msg.mos.roStoryInsert.roID);
+                break;  
+            case !!msg.mos.roStoryReplace:
+                logger(port+ " roStoryReplace");
+                logger(JSON.stringify(msg));
+                ackService.sendAck(msg.mos.roStoryReplace.roID);
+                break;   
+            case !!msg.mos.roStoryAppend:
+                logger(port+ " roStoryAppend");
+                ackService.sendAck(msg.mos.roStoryAppend.roID);
+                break;  
             case !!msg.mos.roDelete:
                 this.roDelete(msg);
                 break;     
             
-            // ****************** roElementAction complex message with actions ************************
             case !!msg.mos.roElementAction:
+                
                 const action = msg.mos.roElementAction["@_operation"];
-                console.log("roElementAction: " + action);
-                if(action === "MOVE"){
-                    this.storyMove(msg);
-                } 
-                else if(action === "REPLACE"){
+                if(action === "REPLACE"){
                     this.storyReplace(msg);
-                } 
-                else if(action === "MOVE"){
-
-                } 
-                else if(action === "DELETE"){
-
-                } else {
-                    console.log("Unknown roElementAction action: " + action);
-                    ackService.sendAck(msg.mos.roElementAction.roID);
                 }
-
                 ackService.sendAck(msg.mos.roElementAction.roID);
                 break;      
             
@@ -102,21 +109,22 @@ class OctopusProcessor {
     }
  
     async roListAll(msg) {
-
-        const roArr = [].concat(msg.mos.roListAll.ro); // Normalize ro data
-
-        for(const ro of roArr){
-             const rundownStr = ro.roSlug;
-             const roID = ro.roID;
-             const uid = await sqlService.addDbRundown(rundownStr,roID);
-             await cache.initializeRundown(rundownStr,uid, appConfig.production, roID);
+        const roIDs = [].concat(msg.mos.roListAll.roID); 
+        const roSlugs = [].concat(msg.mos.roListAll.roSlug); 
+        console.log(JSON.stringify(msg))
+        // Loop over all monitored rundowns and register them in SQL and cache
+        for (let i = 0; i < roIDs.length; i++) {
+            const rundownStr = roSlugs[i];
+            const roID = roIDs[i];
+            const uid = await sqlService.addDbRundown(rundownStr,roID);
+            await cache.initializeRundown(rundownStr,uid, appConfig.production, roID);
         }
         // Now, when cache is updated, hide unwatched rundowns in sql
         await sqlService.hideUnwatchedRundowns();
         
         // Now, loop over all monitored rundowns, and request roReq for each
-        for (const ro of roArr) {
-            const roID = ro.roID;
+        for (let i = 0; i < roIDs.length; i++) {
+            const roID = roIDs[i];
             mosConnector.sendToClient(mosCommands.roReq(roID)); 
         }
 
@@ -208,7 +216,6 @@ class OctopusProcessor {
         story.rundownStr = cache.getRundownSlugByStoryID(story.storyID);
         story = await this.constructStory(story);
         story.uid = await cache.getStoryUid(story.rundownStr, story.storyID);
-        story.ord = cache.getStoryOrd(story.rundownStr,story.storyID)
         // Updates story in SQL
         await sqlService.modifyDbStory(story);
         
@@ -221,58 +228,6 @@ class OctopusProcessor {
         // Update last updates to story and rundown
         await sqlService.rundownLastUpdate(story.rundownStr);
         await sqlService.storyLastUpdate(story.uid);
-        
-        ackService.sendAck(roID);
-    }
-
-    async storyMove(msg){
-        const roID = msg.mos.roElementAction.roID; // roID
-        const rundownStr = cache.getRundownSlugByRoID(roID); // rundownSlug
-        const sourceStoryID = msg.mos.roElementAction.element_source.storyID; // Moved story
-        const targetStoryID = msg.mos.roElementAction.element_target.storyID; // Target story
-        const stories = await cache.getRundown(rundownStr); // Get copy of stories
-        
-        // Get source and target stories
-        const sourceStory = stories[sourceStoryID];
-        const targetStory = targetStoryID ? stories[targetStoryID] : null;
-
-        const sourceOrd = sourceStory.ord;
-        const targetOrd = targetStory ? targetStory.ord : Object.keys(stories).length; // If target is null, move to last+1 position
-        
-        // Determine direction of movement (up or down) src 2 trg 0
-        const movingDown = sourceOrd < targetOrd;
-        
-        for(const storyID in stories){ 
-            
-            const currentStoryOrd = stories[storyID].ord;
-            
-            // Moving down
-            if(movingDown && currentStoryOrd > sourceOrd && currentStoryOrd < targetOrd){
-                const modifiedOrd = currentStoryOrd - 1;
-                cache.modifyStoryOrd(rundownStr,storyID,modifiedOrd);
-            }
-
-            else if(movingDown && currentStoryOrd === sourceOrd){
-                let modifiedOrd;
-                if(!targetStory){
-                    modifiedOrd = Object.keys(stories).length-1;
-                } else {
-                    modifiedOrd = targetOrd - 1;
-                }
-                cache.modifyStoryOrd(rundownStr,storyID,modifiedOrd);
-            }
-            
-            // Moving up
-            else if(!movingDown && currentStoryOrd < sourceOrd && currentStoryOrd >= targetOrd){
-                const modifiedOrd = currentStoryOrd + 1;
-                cache.modifyStoryOrd(rundownStr,storyID,modifiedOrd);
-            }
-            
-            else if(!movingDown && currentStoryOrd === sourceOrd){
-                cache.modifyStoryOrd(rundownStr,storyID,targetOrd);
-            }
-            
-        }
         
         ackService.sendAck(roID);
     }

@@ -234,7 +234,7 @@ class SqlService {
     }
 
 // ********************* ITEMS FUNCTIONS ********************** //
-
+    // Octopus
     async updateItem(rundownStr, item) { // Item: {uid, rundown, story, ord}
         const values = {
             lastupdate: timeConvertors.createTick(),
@@ -252,7 +252,6 @@ class SqlService {
     
         try {
             const result =await db.execute(sqlQuery, values);
-            // ADD HERE STORY UPDATE
             if(result.rowsAffected[0] > 0){
                 logger(`GFX item in ${rundownStr}, story ${item.story} updated`); 
             } else {

@@ -25,9 +25,19 @@ Buffer.from(string, 'utf16le').swap16();
 
 ## Change-log
 
+### V.0.0.6
+
+- Created storyMove complex function. Now its updates only the cache, need to update also sql.
+- Added new methods to cache module, and also removed some old.
+- Adapted application to MOS V.2.8.5 
+- Fixed bug that on story modify its not stores story order.
+- Added bool property "debug" in appconfig - to disable annoying logs on load.
+
 ### V.0.0.5
 
-- Story REPLACE event complete. The strategy is straight&forward for now - overwrite the whole story, including items with replaced story. Thats means all the items order changes handling is included. 
+- Story REPLACE event complete. The strategy is straight&forward for now - overwrite the whole story, including items with replaced story. Thats means all the items order changes handling is included.
+- Did you know? You can open terminal in editor area - and then take it out to other screen as separate instance. How did we lived before that?
+To create the terminal: Open vs-cmd (cntl+shift+p), and type "create new terminal in editor area" . I also created shortcut to call it (cntl+shift+`)
 
 
 ### V.0.0.4

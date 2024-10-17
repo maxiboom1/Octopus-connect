@@ -48,6 +48,12 @@ router.post('/update-item', async (req, res) => {
   }
 });
 
+
+
+
+
+// ****************** FOR DEBUG ******************
+
 // Get http://serverAddr:4001/api/getdata
 router.get('/getrundowns', async (req, res) => {
   const data = await cache.getRundowns();
