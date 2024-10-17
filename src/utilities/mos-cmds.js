@@ -1,4 +1,4 @@
-import appConfig from "../utilities/app-config.js";
+import appConfig from "./app-config.js";
 
 class MosCommands {
     

@@ -4,7 +4,7 @@ import sqlService from "./sql-service.js";
 import inewsCache from "../1-dal/inews-cache.js";
 import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
-import mosCommands from "../mos-commands/mos-cmds.js";
+import mosCommands from "../utilities/mos-cmds.js";
 import appConfig from "../utilities/app-config.js";
 import itemsService from "./items-service.js";
 

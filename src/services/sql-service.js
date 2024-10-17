@@ -4,7 +4,7 @@ import processAndWriteFiles from "../utilities/file-processor.js";
 import inewsCache from "../1-dal/inews-cache.js";
 import itemsService from "./items-service.js";
 import itemsHash from "../1-dal/items-hashmap.js";
-import timeConvertors from "../utilities/time-tick.js";
+import timeConvertors from "../utilities/time-convertors.js";
 import logger from "../utilities/logger.js";
 
 class SqlService {

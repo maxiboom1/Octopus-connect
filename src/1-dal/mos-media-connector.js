@@ -1,7 +1,7 @@
 import net from 'net';
 import appConfig from '../utilities/app-config.js';
 import parser from '../utilities/mos-parser.js';
-import mosCommands from '../mos-commands/mos-cmds.js';
+import mosCommands from '../utilities/mos-cmds.js';
 
 class MosMediaConnector {
     
