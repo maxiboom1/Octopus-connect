@@ -7,6 +7,10 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Change-log
 
+### V.0.0.7
+
+- Move story action complete. 
+
 ### V.0.0.6
 
 - Created storyMove complex function. Now its updates only the cache, need to update also sql.
