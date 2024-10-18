@@ -1,10 +1,12 @@
 import {XMLParser} from "fast-xml-parser";
 import mosRouter from "../services/mos-router.js";
+import appConfig from "./app-config.js";
+import logger from "./logger.js";
 
 function parseMos(buffer, port) {
     try {
       const decodedData = buffer.toString();
-      //console.log("Mos string data: ", decodedData);
+      if(appConfig.showRawMos) {logger("Raw MOS: " + decodedData);}
       const parser = new XMLParser({
           ignoreAttributes: false,   // Keep attributes
           attributeNamePrefix: '@_', // Prefix for attributes, adjust as needed

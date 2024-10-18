@@ -132,6 +132,7 @@ class SqlService {
 
 // ****************************** STORY FUNCTIONS ****************************** //
 
+    // Octopus
     async addDbStory(story){
         const values = {
             name: story.storySlug,
@@ -162,6 +163,7 @@ class SqlService {
         }
     }
 
+    // Octopus
     async modifyDbStory(story){ 
         const values = {
             name:story.storySlug,
@@ -182,7 +184,7 @@ class SqlService {
         }
 
     }
-
+    // Octopus
     async modifyBbStoryOrd(rundownStr, uid, storyName, ord){
         const values = {
             uid:uid,
@@ -202,28 +204,13 @@ class SqlService {
         }
     }
 
-
-    async deleteStory(rundownStr,identifier) {
+    // Octopus
+    async deleteStory(rundownStr,uid) {
+        const values = {uid: uid};
+        const sqlQuery = `DELETE FROM ngn_inews_stories WHERE uid = @uid;`;
         try {
-            const story = await cache.getStory(rundownStr,identifier);
-            const values = {identifier: identifier};
-            const sqlQuery = `DELETE FROM ngn_inews_stories WHERE identifier = @identifier;`;
             await db.execute(sqlQuery, values);
-            await this.rundownLastUpdate(rundownStr);
-            
-            // Check for attachments in story
-            if(Object.keys(story.attachments).length > 0){
-                for(const item of Object.keys(story.attachments)){
-                    await this.deleteItem(rundownStr,{
-                        itemId: item, // item id to delete
-                        rundownId:await cache.getRundownUid(rundownStr), 
-                        storyId:story.uid, 
-                    }); 
-                    itemsService.clearAllDuplicates(item);
-                }
-                
-            }
-            logger(`Story with identifier ${identifier} deleted from ${rundownStr}`);
+            logger(`Story ${uid} deleted from ${rundownStr}`);
     
         } catch (error) {
             console.error(`Error deleting ${uid} story:`, error);
@@ -352,6 +339,17 @@ class SqlService {
             return null;
         }
     }
+
+    // Octopus
+    async deleteDbItemsByStoryUid(uid){
+        const query = `DELETE FROM ngn_inews_items WHERE story = ${uid}`;
+        try {
+            await db.execute(query);
+            logger(`Cleared story ${uid} items`);
+            } catch (error) {
+            console.error('Error clearing story items from SQL:', error);
+            }
+    }
 // ********************* FRONT-TRIGGERED ITEMS FUNCTIONS ********************** //
 
     //This func triggered from web  page, when user click "save". 
@@ -446,7 +444,7 @@ class SqlService {
     }
     
 // ********************* LAST UPDATE && ORD LAST UPDATE FUNCTIONS ********************** //
-    
+    // Octopus
     async rundownLastUpdate(rundownStr){
             const rundownMeta = await cache.getRundownList(rundownStr);
             try {
@@ -464,7 +462,7 @@ class SqlService {
                 console.error('Error rundownLastUpdate:', error);
             }     
     }
-
+    // Octopus
     async storyLastUpdate(storyId){
         try {
             const values = {

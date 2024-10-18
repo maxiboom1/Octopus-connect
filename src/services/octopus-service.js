@@ -151,7 +151,7 @@ class OctopusProcessor {
         story.rundownStr = cache.getRundownSlugByStoryID(story.storyID);
         story = await this.constructStory(story);
         story.uid = await cache.getStoryUid(story.rundownStr, story.storyID);
-        story.ord = cache.getStoryOrd(story.rundownStr,story.storyID)
+        story.ord = await cache.getStoryOrd(story.rundownStr,story.storyID)
         // Updates story in SQL
         await sqlService.modifyDbStory(story);
         
@@ -215,6 +215,37 @@ class OctopusProcessor {
         ackService.sendAck(roID);
     }
 
+    async deleteStory(msg) {
+        const roID = msg.mos.roElementAction.roID; // roID
+        const rundownStr = cache.getRundownSlugByRoID(roID); // rundownSlug
+        const sourceStoryID = msg.mos.roElementAction.element_source.storyID; // Deleted story
+        const stories = await cache.getRundown(rundownStr); // Get copy of stories
+        const deletedOrd = stories[sourceStoryID].ord;
+
+        // Run over all stories in RD, delete/reorder 
+        for (const storyID in stories) {
+            const currentOrd = stories[storyID].ord;
+            
+            if(currentOrd < deletedOrd ) continue;
+            
+            if(currentOrd === deletedOrd){
+                // Add here Delete all story items!
+                await cache.deleteStory(rundownStr, sourceStoryID);
+                await sqlService.deleteStory(rundownStr, stories[storyID].uid);
+            } else { 
+                // decrement story id in sql and cache
+                await cache.modifyStoryOrd(rundownStr, storyID, currentOrd-1);
+                await sqlService.modifyBbStoryOrd(rundownStr, stories[storyID].uid, stories[storyID].name, currentOrd-1); 
+            }
+        }
+        // Delete all items with deleted story uid
+        await sqlService.deleteDbItemsByStoryUid(stories[sourceStoryID].uid);
+        // Update rundown last update
+        await sqlService.rundownLastUpdate(rundownStr);
+        // Send ack to mos
+        ackService.sendAck(roID);
+    }
+
     // *************************************** Helper/common functions *************************************** // 
 
     // Adds to story uid, production, normalizing item for array. Story obj must have "rundownStr" prop!
@@ -227,7 +258,7 @@ class OctopusProcessor {
     }
      
     async modifyOrd(rundownStr, storyID, storyUid,storyName, ord){
-        cache.modifyStoryOrd(rundownStr, storyID, ord);
+        await cache.modifyStoryOrd(rundownStr, storyID, ord);
         await sqlService.modifyBbStoryOrd(rundownStr, storyUid, storyName, ord); 
     }
     

@@ -120,13 +120,26 @@ class Cache {
         };
     }
     // Octopus
-    modifyStoryOrd(rundownStr, storyID, ord){
-        this.stories[rundownStr][storyID].ord = ord;
+    async modifyStoryOrd(rundownStr, storyID, ord) {
+        if (this.stories[rundownStr] && this.stories[rundownStr][storyID]) {
+            this.stories[rundownStr][storyID].ord = ord;
+        }
     }
+    
     // Octopus
-    getStoryOrd(rundownStr, storyID){
+    async getStoryOrd(rundownStr, storyID){
         return this.stories[rundownStr][storyID].ord
     }
+
+    // Octopus
+    async deleteStory(rundownStr, storyID) {
+        if (this.stories[rundownStr] && this.stories[rundownStr][storyID]) {
+            delete this.stories[rundownStr][storyID];
+        }
+    }
+    
+
+
 
     // ********************* RUNDOWNS FUNCTIONS ********************** //
     
@@ -148,7 +161,7 @@ class Cache {
         }
         return null; 
     }
-
+    // Octopus
     async getRundown(rundownStr) {
         return JSON.parse(JSON.stringify(this.stories[rundownStr]));
     }
@@ -205,7 +218,7 @@ class Cache {
         delete this.stories[rundownStr];
         delete this.rundownsList[rundownStr];
     }
-
+    // Octopus
     async modifyRundownStr(oldRundownStr, newRundownStr){
         // Modify this rundownList object
         const rundownData = this.rundownsList[oldRundownStr];

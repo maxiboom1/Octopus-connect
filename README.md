@@ -7,10 +7,15 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Change-log
 
-### V.0.0.8
+### V.0.0.9
 
 - Mos-router separated to it's own service file.
 - roMetadataReplace handles rundownSlug change - and in this case update name in ngn_inews_rundowns, and in cache implemented modifyRundownStr that modify rundown name both in this.stories and this.rundownList cache objects.
+
+### V.0.0.8
+
+- Delete story complete. Handles deleted story, deletes it items from SQL, and delete story from cache and SQL. 
+Reorders the affected stories (those who was under the deleted one).
 
 ### V.0.0.7
 

@@ -41,19 +41,21 @@ function mosRouter(msg, port) {
         // ****************** roElementAction complex message with actions ************************
         case !!msg.mos.roElementAction:
             const action = msg.mos.roElementAction["@_operation"];
-            console.log("roElementAction: " + action);
+
             if(action === "MOVE"){
                 octopusService.storyMove(msg);
             } 
             else if(action === "REPLACE"){
                 octopusService.storyReplace(msg);
             } 
-            else if(action === "MOVE"){
-
+            else if(action === "INSERT"){
+                console.log("INSERT");
             } 
             else if(action === "DELETE"){
-
-            } else {
+                octopusService.deleteStory(msg);
+            } 
+            
+            else {
                 console.log("Unknown roElementAction action: " + action);
                 ackService.sendAck(msg.mos.roElementAction.roID);
             }
