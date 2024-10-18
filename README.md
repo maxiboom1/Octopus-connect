@@ -7,6 +7,13 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Change-log
 
+### **V 1.0.0**
+
+- All running order actions for stories and items done and checked - INSERT, REPLACE, MOVE, DELETE.
+- Well-structured modules.
+- Clear action-router-handler-sql-cache-acknowledge flow. 
+- Now this is the time to handle duplicated items and try to replace them from the octopus-connect.
+
 ### V.0.0.9
 
 - Mos-router separated to it's own service file.

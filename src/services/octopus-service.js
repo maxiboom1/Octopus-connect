@@ -126,7 +126,7 @@ class OctopusProcessor {
         
         // Add props to story
         story = await this.constructStory(story);
-        
+
         // Store story in DB, and save assigned uid
         story.uid = await sqlService.addDbStory(story);
         
@@ -138,7 +138,6 @@ class OctopusProcessor {
 
         // Update last updates to story and rundown
         await sqlService.rundownLastUpdate(story.rundownStr);
-        await sqlService.storyLastUpdate(story.uid);
 
     }
     
@@ -212,6 +211,40 @@ class OctopusProcessor {
         
         await sqlService.rundownLastUpdate(rundownStr);
 
+        ackService.sendAck(roID);
+    }
+
+    async insertStory(msg) {
+        const roID = msg.mos.roElementAction.roID; // roID
+        const rundownStr = cache.getRundownSlugByRoID(roID); // rundownSlug
+        const targetStoryID = msg.mos.roElementAction.element_target.storyID;
+        const stories = await cache.getRundown(rundownStr); // Get copy of stories
+        // In case there are no stories yet in RD
+        const targetOrd = (stories[targetStoryID] && stories[targetStoryID].ord) ? stories[targetStoryID].ord: 0;
+
+        // Run over all stories in RD, to sync orders
+        for (const storyID in stories) {
+            const currentOrd = stories[storyID].ord;
+            
+            // Bypass all stories above inserted
+            if(currentOrd < targetOrd) continue;
+            
+            // Increase stories ord from target to the end of list
+            if(currentOrd >= targetOrd){
+                await cache.modifyStoryOrd(rundownStr, storyID, currentOrd+1);
+                await sqlService.modifyBbStoryOrd(rundownStr, stories[storyID].uid, stories[storyID].name, currentOrd+1); 
+            }
+
+        }
+        
+        const story = msg.mos.roElementAction.element_source.story; // Inserted story
+        
+        // Set props to inserted story
+        story.ord = targetOrd;
+        story.rundownStr = rundownStr;
+        // Store new story and its items
+        await this.handleNewStory(story);
+        
         ackService.sendAck(roID);
     }
 

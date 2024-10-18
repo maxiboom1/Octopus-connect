@@ -49,7 +49,7 @@ function mosRouter(msg, port) {
                 octopusService.storyReplace(msg);
             } 
             else if(action === "INSERT"){
-                console.log("INSERT");
+                octopusService.insertStory(msg);
             } 
             else if(action === "DELETE"){
                 octopusService.deleteStory(msg);
