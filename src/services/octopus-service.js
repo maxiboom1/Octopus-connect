@@ -190,15 +190,6 @@ class OctopusProcessor {
 
     }
     
-    // Adds to story uid, production, normalizing item for array. Story obj must have "rundownStr" prop!
-    async constructStory(story){
-        const rundownMeta = await cache.getRundownList(story.rundownStr);
-        story.item = Array.isArray(story.item) ? story.item : [story.item];
-        story.rundown = rundownMeta.uid;
-        story.production = rundownMeta.production;
-        return story;
-    }
-    
     // *************************************** Rundowns Element actions *************************************** // 
 
     // Its overwrite the whole story and its items, on any change. Possible optimization might be to compare each item before update them.
@@ -225,57 +216,69 @@ class OctopusProcessor {
         ackService.sendAck(roID);
     }
 
-    async storyMove(msg){
+    async storyMove(msg) {
         const roID = msg.mos.roElementAction.roID; // roID
         const rundownStr = cache.getRundownSlugByRoID(roID); // rundownSlug
         const sourceStoryID = msg.mos.roElementAction.element_source.storyID; // Moved story
         const targetStoryID = msg.mos.roElementAction.element_target.storyID; // Target story
         const stories = await cache.getRundown(rundownStr); // Get copy of stories
         
-        // Get source and target stories
         const sourceStory = stories[sourceStoryID];
         const targetStory = targetStoryID ? stories[targetStoryID] : null;
-
+    
         const sourceOrd = sourceStory.ord;
-        const targetOrd = targetStory ? targetStory.ord : Object.keys(stories).length; // If target is null, move to last+1 position
-        
-        // Determine direction of movement (up or down) src 2 trg 0
+        const totalStories = Object.keys(stories).length;
+        const targetOrd = targetStory ? targetStory.ord : totalStories; // Move to last+1 position if no target
         const movingDown = sourceOrd < targetOrd;
-        
-        for(const storyID in stories){ 
+    
+        for (const storyID in stories) {
             
             const currentStoryOrd = stories[storyID].ord;
+            const storyUid = stories[storyID].uid;
+            const storyName = stories[storyID].name;
             
-            // Moving down
-            if(movingDown && currentStoryOrd > sourceOrd && currentStoryOrd < targetOrd){
-                const modifiedOrd = currentStoryOrd - 1;
-                cache.modifyStoryOrd(rundownStr,storyID,modifiedOrd);
+            // Moving down: stories between source and target should decrement
+            if (movingDown) {
+                if (currentStoryOrd > sourceOrd && currentStoryOrd < targetOrd) {
+                    await this.modifyOrd(rundownStr, storyID, storyUid,storyName, currentStoryOrd-1);
+                } else if (currentStoryOrd === sourceOrd) {
+                    const modifiedOrd = targetStory ? targetOrd - 1 : totalStories - 1;
+                    await this.modifyOrd(rundownStr, storyID, storyUid,storyName, modifiedOrd);
+                }
+            }
+            
+            // Moving up: stories between target and source should increment
+            else {
+                if (currentStoryOrd < sourceOrd && currentStoryOrd >= targetOrd) {  
+                    await this.modifyOrd(rundownStr, storyID, storyUid,storyName, currentStoryOrd+1);
+                } else if (currentStoryOrd === sourceOrd) {   
+                    await this.modifyOrd(rundownStr, storyID, storyUid,storyName, targetOrd);
+                }
             }
 
-            else if(movingDown && currentStoryOrd === sourceOrd){
-                let modifiedOrd;
-                if(!targetStory){
-                    modifiedOrd = Object.keys(stories).length-1;
-                } else {
-                    modifiedOrd = targetOrd - 1;
-                }
-                cache.modifyStoryOrd(rundownStr,storyID,modifiedOrd);
-            }
-            
-            // Moving up
-            else if(!movingDown && currentStoryOrd < sourceOrd && currentStoryOrd >= targetOrd){
-                const modifiedOrd = currentStoryOrd + 1;
-                cache.modifyStoryOrd(rundownStr,storyID,modifiedOrd);
-            }
-            
-            else if(!movingDown && currentStoryOrd === sourceOrd){
-                cache.modifyStoryOrd(rundownStr,storyID,targetOrd);
-            }
-            
         }
         
+        await sqlService.rundownLastUpdate(rundownStr);
+
         ackService.sendAck(roID);
     }
+
+    // *************************************** Helper/common functions *************************************** // 
+
+    // Adds to story uid, production, normalizing item for array. Story obj must have "rundownStr" prop!
+    async constructStory(story){
+        const rundownMeta = await cache.getRundownList(story.rundownStr);
+        story.item = Array.isArray(story.item) ? story.item : [story.item];
+        story.rundown = rundownMeta.uid;
+        story.production = rundownMeta.production;
+        return story;
+    }
+     
+    async modifyOrd(rundownStr, storyID, storyUid,storyName, ord){
+        cache.modifyStoryOrd(rundownStr, storyID, ord);
+        await sqlService.modifyBbStoryOrd(rundownStr, storyUid, storyName, ord); 
+    }
+    
 }
 
 

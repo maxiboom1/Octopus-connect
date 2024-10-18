@@ -183,28 +183,25 @@ class SqlService {
 
     }
 
-    async reorderDbStory(rundownStr,story,ord){
+    async modifyBbStoryOrd(rundownStr, uid, storyName, ord){
         const values = {
+            uid:uid,
             ord: ord,
-            locator: story.locator,
-            identifier: story.identifier,
             ordupdate: timeConvertors.createTick(),
         };
-        
         const sqlQuery = `
             UPDATE ngn_inews_stories
-            SET ord = @ord, ordupdate = @ordupdate, locator = @locator
-            WHERE identifier = @identifier;
+            SET ord = @ord, ordupdate = @ordupdate
+            WHERE uid = @uid;
         `;
         try {
             await db.execute(sqlQuery, values);
-            await this.rundownLastUpdate(rundownStr);
-            logger(`Reorder story in ${rundownStr}: ${story.storyName}`);
+            logger(`Reorder story in ${rundownStr}: ${storyName}`);
         } catch (error) {
             console.error('Error executing query:', error);
         }
-
     }
+
 
     async deleteStory(rundownStr,identifier) {
         try {
