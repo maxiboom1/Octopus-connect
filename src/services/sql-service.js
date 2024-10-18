@@ -481,6 +481,24 @@ class SqlService {
             console.error('Error storyLastUpdate:', error);
         }     
 }
+    // Octopus
+    async modifyRundownStr(uid, rundownStr){
+        try {
+            const values = {
+                uid: uid,
+                lastupdate: timeConvertors.createTick(),
+                name: rundownStr
+            }
+            const sqlQuery = `
+                UPDATE ngn_inews_rundowns
+                SET lastupdate = @lastupdate, name = @name
+                WHERE uid = @uid;
+            `;
+            await db.execute(sqlQuery, values);
+        } catch (error) {
+            console.error('Error updating rundown name in SQL:', error);
+        }     
+    }
 
 // ********************* DUPLICATE ITEMS FUNCTIONS ********************** //
 
@@ -522,6 +540,7 @@ class SqlService {
     }
 
 // ********************* UN-MONITOR RUNDOWN FROM MOS ********************** //
+    // Octopus
     async deleteDbRundown(uid,rundownStr) {
         const values = {
             uid:uid,
@@ -539,7 +558,7 @@ class SqlService {
             console.error('Error un-monitor rundown:', error);
             }
     }
-
+    // Octopus
     async deleteDbStoriesByRundownID(uid){
         const query = `DELETE FROM ngn_inews_stories WHERE rundown = ${uid}`;
         try {
@@ -549,7 +568,7 @@ class SqlService {
             console.error('Error clearing un-monitored stories from SQL:', error);
             }
     }
-
+    // Octopus
     async deleteDbItemsByRundownID(uid){
         const query = `DELETE FROM ngn_inews_items WHERE rundown = ${uid}`;
         try {

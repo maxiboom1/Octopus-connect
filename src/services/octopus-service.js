@@ -19,67 +19,19 @@ class OctopusProcessor {
         mosConnector.sendToClient(mosCommands.roReqAll());
     }
     
-    mosRouter(msg, port) {
-        // double !! converts expression to boolean - so, 
-        // if msg.mos.heartbeat exists - the !! convert it to "true"
-        switch (true) {
-            case !!msg.mos.heartbeat:
-                //logger(port + " heartbeat");
-                ackService.sendHeartbeat(port);
-                break;
-            case !!msg.mos.roListAll:
-                logger(port + " received roListAll");
-                this.roListAll(msg)
-                break;
-            case !!msg.mos.roList:
-                logger(port + " received roList");
-                this.roList(msg)
-                break;
-            case !!msg.mos.roCreate:
-                this.roCreate(msg);
-                break;
-            case !!msg.mos.roReadyToAir:
-                logger(port+ " readyToAir");
-                ackService.sendAck(msg.mos.roReadyToAir.roID);
-                break;
-            case !!msg.mos.roStorySend:
-                logger(port+ " storySend: " + JSON.stringify(msg));
-                ackService.sendAck(msg.mos.roStorySend.roID);
-                break;
-            
-            case !!msg.mos.roDelete:
-                this.roDelete(msg);
-                break;     
-            
-            // ****************** roElementAction complex message with actions ************************
-            case !!msg.mos.roElementAction:
-                const action = msg.mos.roElementAction["@_operation"];
-                console.log("roElementAction: " + action);
-                if(action === "MOVE"){
-                    this.storyMove(msg);
-                } 
-                else if(action === "REPLACE"){
-                    this.storyReplace(msg);
-                } 
-                else if(action === "MOVE"){
-
-                } 
-                else if(action === "DELETE"){
-
-                } else {
-                    console.log("Unknown roElementAction action: " + action);
-                    ackService.sendAck(msg.mos.roElementAction.roID);
-                }
-
-                ackService.sendAck(msg.mos.roElementAction.roID);
-                break;      
-            
-            default:
-                logger('Unknown MOS message: ', true);
-                console.log(JSON.stringify(msg));
-                const roID = this.findRoID(msg);
-                if(roID){ackService.sendAck(roID);}
+    async roMetadataReplace(msg){
+        const roID = msg.mos.roMetadataReplace.roID;
+        const {rundownStr, uid} = await cache.getRundownUidAndStrByRoID(roID);
+        
+        if(rundownStr !== msg.mos.roMetadataReplace.roSlug){
+            const newRundownStr = msg.mos.roMetadataReplace.roSlug;
+            await sqlService.modifyRundownStr(uid, newRundownStr);
+            await cache.modifyRundownStr(rundownStr, newRundownStr);
+            console.log(`RoMetadaReplace: Rundown name changed to ${newRundownStr}`);
         }
+
+        ackService.sendAck(roID);
+
     }
 
     // If we receive some unknown MOS object - we will try to find its roID and return acknowledge, to avoid message stuck and reconnection.

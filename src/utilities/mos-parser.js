@@ -1,6 +1,5 @@
 import {XMLParser} from "fast-xml-parser";
-import octopusService from "../services/octopus-service.js"
-
+import mosRouter from "../services/mos-router.js";
 
 function parseMos(buffer, port) {
     try {
@@ -15,7 +14,7 @@ function parseMos(buffer, port) {
           parseTagValue: true        // Parse inner text of tags, even when empty
       });
       let obj = parser.parse(decodedData);
-      octopusService.mosRouter(obj, port);
+      mosRouter(obj, port);
 
   } catch (error) {
       console.error(`${port}: Error parsing MOS message: ${buffer.toString()}`, error);

@@ -1,5 +1,3 @@
-
-
 const storyCacheExample = {
     "rundownSlug": {
         "storyID": {
@@ -28,4 +26,12 @@ const storyCacheExample = {
         // Other stories 
     }
     // Other rundowns
+}
+
+const rundownsListExample = {
+    "Morning 10/17/2024 07:00": {
+        "uid": "10073",
+        "production": 2,
+        "roID": 8208105
+    }
 }

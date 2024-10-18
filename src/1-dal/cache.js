@@ -143,7 +143,7 @@ class Cache {
         for (const rundownStr in this.rundownsList) {
             const rundown = this.rundownsList[rundownStr];
             if (rundown.roID === roID) {
-                return {uid:rundown.uid,rundownStr:rundownStr};
+                return {rundownStr:rundownStr,uid:rundown.uid};
             }
         }
         return null; 
@@ -204,6 +204,25 @@ class Cache {
     async deleteRundownFromCache(rundownStr){
         delete this.stories[rundownStr];
         delete this.rundownsList[rundownStr];
+    }
+
+    async modifyRundownStr(oldRundownStr, newRundownStr){
+        // Modify this rundownList object
+        const rundownData = this.rundownsList[oldRundownStr];
+        const storyCacheData = this.stories[oldRundownStr];
+        
+        if (rundownData) {
+            this.rundownsList[newRundownStr] = {}; // Initialize new object
+            this.rundownsList[newRundownStr] = rundownData; // Step 2: Copy the data to the new `rundownStr`
+            delete this.rundownsList[oldRundownStr]; // Step 3: Delete the old `rundownStr`
+        }
+
+        if (storyCacheData) {
+            this.stories[newRundownStr] = {};
+            this.stories[newRundownStr] = storyCacheData;
+            delete this.stories[oldRundownStr];
+        }
+
     }
     
 }
