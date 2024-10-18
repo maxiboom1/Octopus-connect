@@ -56,10 +56,10 @@ ngn_inews_stories ==> deleted "identifier" prop. Renamed "locator" to "storyID" 
 
 ## Optimization
 
-- Calling function from top-layer modules, that calls async functions must be wrapped with try-catch
-- handleNewStory overwrites complete story, and its items. Its possible to compare incoming story with cache, and update only changes. 
+1. Calling function from top-layer modules, that calls async functions must be wrapped with try-catch
+2. handleNewStory overwrites complete story, and its items. Its possible to compare incoming story with cache, and update only changes. 
 
-### MOS message encoding (un-used, since there is an option to use UTF-8 with Octopus):
+## MOS message encoding (un-used, since there is an option to use UTF-8 with Octopus):
 
 The supported character encoding is ISO 10646 (Unicode) in UCS-2, as defined in The Unicode Standard, version 2.0. All MOS message contents are transmitted in Unicode, high-order byte first, also known as "big endian."
 
