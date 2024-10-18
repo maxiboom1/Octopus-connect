@@ -75,7 +75,7 @@ ngn_inews_stories ==> deleted "identifier" prop. Renamed "locator" to "storyID" 
 
 1. Calling function from top-layer modules, that calls async functions must be wrapped with try-catch
 2. handleNewStory overwrites complete story, and its items. Its possible to compare incoming story with cache, and update only changes.
-3. Handle duplicated stories. This is complex case, when user copy story with item inside the story. As a result, we got 2 identical items with same sqlID, that provided by octopus-connect plugin. The problem is that SQL structure doest allow assign item to more than 1 story id. Therefore, we wont see the copied item in SQL. The solvation will be to handle those cases, and once duplicate item detected, create new item with same data in sql, and send mos command to modify the duplicated item object with new item id. The first step in my drv will be test those mos-modify command. 
+3. Handle duplicated stories. This is complex case, when user copy story with item inside the story. As a result, we got 2 identical items with same sqlID, that provided by octopus-connect plugin. The problem is that SQL structure doest allow assign item to more than 1 story id. Therefore, we wont see the copied item in SQL. The solvation will be to handle those cases, and once duplicate item detected, create new item with same data in sql, and send mos command to modify the duplicated item object with new item id. The first step is to test **mosItemReplace** command from MOS profile 3 – Advanced Object Based Workflow. Its allows to modify item that embedded in story, from the MOS client.
 
 ## MOS message encoding (un-used, since there is an option to use UTF-8 with Octopus):
 
