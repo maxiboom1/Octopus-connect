@@ -80,6 +80,8 @@ ngn_inews_stories ==> deleted "identifier" prop. Renamed "locator" to "storyID" 
 5. Why all item in "not ready" state? Check roCtrl - it can be sent from Mos to NCS, and change the "air" status.
 6. Why items recognized by NCS as "clips", and not "CG"? 
 7. On rundown un-monitor from Octopus - what should happen to items?
+8. Re-number
+9. Assign production based on rundown name mask.
 
 ## MOS message encoding (un-used, since there is an option to use UTF-8 with Octopus):
 
