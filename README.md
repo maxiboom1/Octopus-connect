@@ -9,7 +9,8 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ### V 1.0.1
 
-- Handle case when no active rundowns 
+- Handle case when no active rundowns.
+- Fixed reorder bug (Now it's working).
 
 ### **V 1.0.0**
 

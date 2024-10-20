@@ -168,7 +168,7 @@ class SqlService {
         const values = {
             name:story.storySlug,
             lastupdate: timeConvertors.createTick(),
-            number:story.pageNum || "",
+            number:story.storyNum || "",
             storyID:story.storyID
         };
         const sqlQuery = `
