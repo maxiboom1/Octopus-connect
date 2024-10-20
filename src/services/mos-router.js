@@ -1,6 +1,7 @@
 import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
 import octopusService from "./octopus-service.js";
+import mosCommands from "../utilities/mos-cmds.js";
 
 function mosRouter(msg, port) {
     // double !! converts expression to boolean - so, 
@@ -56,13 +57,17 @@ function mosRouter(msg, port) {
             } 
             
             else {
-                console.log("Unknown roElementAction action: " + action);
+                console.log("Unknown roElementAction action: " ,true);
                 ackService.sendAck(msg.mos.roElementAction.roID);
             }
 
             ackService.sendAck(msg.mos.roElementAction.roID);
             break;      
         
+        case JSON.stringify(msg) === mosCommands.emptyNCS():
+            logger("NCS doesn't have active rundowns.",true);
+            break;
+
         default:
             logger('Unknown MOS message: ', true);
             console.log(JSON.stringify(msg));

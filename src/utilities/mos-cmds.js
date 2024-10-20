@@ -41,6 +41,10 @@ class MosCommands {
         return delimiter;
     }
 
+    emptyNCS(){
+        return `{"mos":{"mosID":"${this.mosID}","ncsID":"${this.ncsID}","messageID":"","roListAll":""}}`;
+    }
+
 }
 
 const mosCommands = new MosCommands();

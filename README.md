@@ -7,6 +7,10 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Change-log
 
+### V 1.0.1
+
+- Handle case when no active rundowns 
+
 ### **V 1.0.0**
 
 - All running order actions for stories and items done and checked - INSERT, REPLACE, MOVE, DELETE.
