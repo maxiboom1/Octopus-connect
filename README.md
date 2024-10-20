@@ -79,6 +79,7 @@ ngn_inews_stories ==> deleted "identifier" prop. Renamed "locator" to "storyID" 
 4. Check if it possible to avoid using "save", or, using save to store data in sql, **and** update story in one click. Look at the Mos spec "5.3 ActiveX and Web Control Communication messages", there is an section that describes message exchange protocol beetween ncs and plugin.
 5. Why all item in "not ready" state? Check roCtrl - it can be sent from Mos to NCS, and change the "air" status.
 6. Why items recognized by NCS as "clips", and not "CG"? 
+7. On rundown un-monitor from Octopus - what should happen to items?
 
 ## MOS message encoding (un-used, since there is an option to use UTF-8 with Octopus):
 
