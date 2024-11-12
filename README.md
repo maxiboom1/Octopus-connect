@@ -11,6 +11,7 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 - Sends reqMachInfo on connect, and prints the result on console onload.
 - Fixed the case when no active rundown in system (roListAll is empty).
+- Found the checkbox in octopus that sets "ready" status of items by default (in MOS Objects => Default objAir is READY)
 
 
 ### V 1.0.1
