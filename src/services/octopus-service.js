@@ -54,7 +54,10 @@ class OctopusProcessor {
     }
  
     async roListAll(msg) {
-
+        if (msg.mos.roListAll === ""){
+            logger("NCS doesn't have active rundowns.",true);
+            return;
+        }
         const roArr = [].concat(msg.mos.roListAll.ro); // Normalize ro data
 
         for(const ro of roArr){
@@ -138,7 +141,7 @@ class OctopusProcessor {
 
         // Update last updates to story and rundown
         await sqlService.rundownLastUpdate(story.rundownStr);
-
+        
     }
     
     // *************************************** Rundowns Element actions *************************************** // 

@@ -12,7 +12,7 @@ class MosCommands {
             <mosID>${this.mosID}</mosID>
             <ncsID>${this.ncsID}</ncsID>
             <messageID></messageID>
-            </reqMachineInfo>
+            <reqMachInfo/>
         </mos>`;
     }
 
@@ -41,8 +41,19 @@ class MosCommands {
         return delimiter;
     }
 
-    emptyNCS(){
-        return `{"mos":{"mosID":"${this.mosID}","ncsID":"${this.ncsID}","messageID":"","roListAll":""}}`;
+    storyReady(roID,storyId){
+        return `
+            <mos>
+                <mosID>${this.mosID}</mosID>
+                <ncsID>${this.ncsID}</ncsID>
+                <messageID>1</messageID>
+                <roCtrl>
+                    <roID>${roID}</roID>
+                    <storyID>${storyId}</storyID>
+                    <itemID></itemID>
+                    <command>READY</command>
+                </roCtrl>
+            </mos>`
     }
 
 }

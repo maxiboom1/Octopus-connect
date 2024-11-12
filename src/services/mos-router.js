@@ -1,13 +1,14 @@
 import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
 import octopusService from "./octopus-service.js";
-import mosCommands from "../utilities/mos-cmds.js";
 
 function mosRouter(msg, port) {
     // double !! converts expression to boolean - so, 
     // if msg.mos.heartbeat exists - the !! convert it to "true"
     switch (true) {
-        
+        case !!msg.mos.listMachInfo:
+            logger("NRCS Machine Info: " + JSON.stringify(msg.mos.listMachInfo));
+            break;
         case !!msg.mos.heartbeat:
             ackService.sendHeartbeat(port);
             break;
@@ -15,7 +16,7 @@ function mosRouter(msg, port) {
             octopusService.roMetadataReplace(msg);
             break;         
               
-        case !!msg.mos.roListAll:
+        case msg.mos.roListAll !== undefined:
             logger(port + " received roListAll");
             octopusService.roListAll(msg)
             break;
@@ -63,10 +64,6 @@ function mosRouter(msg, port) {
 
             ackService.sendAck(msg.mos.roElementAction.roID);
             break;      
-        
-        case JSON.stringify(msg) === mosCommands.emptyNCS():
-            logger("NCS doesn't have active rundowns.",true);
-            break;
 
         default:
             logger('Unknown MOS message: ', true);

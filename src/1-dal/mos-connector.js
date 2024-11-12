@@ -24,6 +24,7 @@ class MosConnector {
     
             this.client.connect({ host: appConfig.octopusIpAddr, port: appConfig.rundownPort }, () => {
                 console.log(`MOS client connected to ${appConfig.rundownPort}`);
+                this.sendToClient(mosCommands.reqMachInfo());
                 resolve(); // Resolve when connected
             });
     
