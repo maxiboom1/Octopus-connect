@@ -36,8 +36,6 @@ const rundownsListExample = {
     }
 }
 
-
-
 const insertExample = {
     "mos": {
       "mosID": "newsarts",

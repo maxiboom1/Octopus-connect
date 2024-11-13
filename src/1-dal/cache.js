@@ -51,10 +51,6 @@ class Cache {
     }
     
     // ********************* PRODUCTIONS FUNCTIONS ********************** //
-    async getProductions(){
-
-        return this.productions;
-    }
 
     async getProductionsArr() {
         let arr = [];
@@ -94,18 +90,17 @@ class Cache {
 
     // ********************* STORY FUNCTIONS ********************** //
 
-    // Octopus
     async getStoryUid(rundownStr, storyID){
         if (this.isStoryExists(rundownStr, storyID)) {
             return this.stories[rundownStr][storyID].uid;
         }
     }
-    // Octopus
+
     async isStoryExists(rundownStr, storyID) {
         const storyExists = !!this.stories[rundownStr] && !!this.stories[rundownStr][storyID];
         return storyExists;
     }
-    // Octopus
+
     async saveStory(story) {
 
         this.stories[story.rundownStr][story.storyID] = {
@@ -119,27 +114,22 @@ class Cache {
             item: story.item
         };
     }
-    // Octopus
+
     async modifyStoryOrd(rundownStr, storyID, ord) {
         if (this.stories[rundownStr] && this.stories[rundownStr][storyID]) {
             this.stories[rundownStr][storyID].ord = ord;
         }
     }
     
-    // Octopus
     async getStoryOrd(rundownStr, storyID){
         return this.stories[rundownStr][storyID].ord
     }
 
-    // Octopus
     async deleteStory(rundownStr, storyID) {
         if (this.stories[rundownStr] && this.stories[rundownStr][storyID]) {
             delete this.stories[rundownStr][storyID];
         }
     }
-    
-
-
 
     // ********************* RUNDOWNS FUNCTIONS ********************** //
     
@@ -148,10 +138,6 @@ class Cache {
         return Object.keys(this.rundownsList);
     }
 
-    async getRundownUid(rundownStr){
-        return this.rundownsList[rundownStr].uid;
-    }
-    // Octopus
     async getRundownUidAndStrByRoID(roID) {
         for (const rundownStr in this.rundownsList) {
             const rundown = this.rundownsList[rundownStr];
@@ -161,7 +147,7 @@ class Cache {
         }
         return null; 
     }
-    // Octopus
+
     async getRundown(rundownStr) {
         return JSON.parse(JSON.stringify(this.stories[rundownStr]));
     }
@@ -170,24 +156,6 @@ class Cache {
         return this.rundownsList[rundownStr];
     }
 
-    async getProdIdByRundown(rundownStr){
-        return this.rundownsList[rundownStr].production;
-    }
-
-    async getDataByRundownStr(rundownStr){
-        return {
-                production: this.rundownsList[rundownStr].production,
-                rundown: this.rundownsList[rundownStr].uid
-        }
-
-    }
-
-    async getRundownLength(rundownStr) {
-        const rundown = this.stories[rundownStr];
-        return rundown ? Object.keys(rundown).length : 0;
-    }
-
-    // Octopus
     getRundownSlugByStoryID(storyID) {
         for (const rundownSlug in this.stories) {
             if (this.stories[rundownSlug][storyID]) {
@@ -196,7 +164,7 @@ class Cache {
         }
         return null; 
     }
-    // Octopus
+
     getRundownSlugByRoID(roID) {
         for (const rundownSlug in this.rundownsList) {
             if (this.rundownsList[rundownSlug].roID === roID) {
@@ -218,7 +186,7 @@ class Cache {
         delete this.stories[rundownStr];
         delete this.rundownsList[rundownStr];
     }
-    // Octopus
+
     async modifyRundownStr(oldRundownStr, newRundownStr){
         // Modify this rundownList object
         const rundownData = this.rundownsList[oldRundownStr];
