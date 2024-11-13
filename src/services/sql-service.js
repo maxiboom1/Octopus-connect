@@ -2,7 +2,6 @@ import appConfig from "../utilities/app-config.js";
 import db from "../1-dal/sql.js";
 import processAndWriteFiles from "../utilities/file-processor.js";
 import cache from "../1-dal/cache.js";
-import itemsService from "./items-service.js";
 import itemsHash from "../1-dal/items-hashmap.js";
 import timeConvertors from "../utilities/time-convertors.js";
 import logger from "../utilities/logger.js";
@@ -16,7 +15,6 @@ class SqlService {
             await this.deleteDBStories();
             await this.getAndStoreProductions(); 
             await this.getAndStoreTemplates();
-            await itemsHash.resetDuplicates();
         }        
         catch (error) {
             throw error;
@@ -33,7 +31,7 @@ class SqlService {
             throw error;
         }
     }
-    
+
     async addDbRundown(rundownStr,roID) {
         const values = {
             name: rundownStr,
@@ -82,7 +80,7 @@ class SqlService {
             console.error('Error registering rundown:', error);
         }
     }
-    
+
     async getAndStoreProductions() {
         try {
             const sql = `SELECT uid, name,properties FROM ngn_productions WHERE enabled = 1`;
@@ -132,7 +130,6 @@ class SqlService {
 
 // ****************************** STORY FUNCTIONS ****************************** //
 
-    // Octopus
     async addDbStory(story){
         const values = {
             name: story.storySlug,
@@ -163,7 +160,6 @@ class SqlService {
         }
     }
 
-    // Octopus
     async modifyDbStory(story){ 
         const values = {
             name:story.storySlug,
@@ -184,7 +180,7 @@ class SqlService {
         }
 
     }
-    // Octopus
+
     async modifyBbStoryOrd(rundownStr, uid, storyName, ord){
         const values = {
             uid:uid,
@@ -204,7 +200,6 @@ class SqlService {
         }
     }
 
-    // Octopus
     async deleteStory(rundownStr,uid) {
         const values = {uid: uid};
         const sqlQuery = `DELETE FROM ngn_inews_stories WHERE uid = @uid;`;
@@ -218,7 +213,7 @@ class SqlService {
     }
 
 // ********************* ITEMS FUNCTIONS ********************** //
-    // Octopus
+
     async updateItem(rundownStr, item) { // Item: {uid, rundown, story, ord}
         const values = {
             lastupdate: timeConvertors.createTick(),
@@ -248,99 +243,6 @@ class SqlService {
         }
     }
 
-    async updateItemOrd(rundownStr, item) { // Item: {itemId, rundownId, storyId, ord}
-        const values = {
-            ord: item.ord,
-            ordupdate: timeConvertors.createTick(),
-            uid: item.itemId
-        };
-        const sqlQuery = `
-            UPDATE ngn_inews_items SET 
-            ord = @ord, ordupdate = @ordupdate
-            OUTPUT INSERTED.*
-            WHERE uid = @uid;`;
-    
-        try {
-            const result =await db.execute(sqlQuery, values);
-            if(result.rowsAffected[0] > 0){
-                logger("Item Reordered event registered");
-            }
-
-        } catch (error) {
-            console.error('Error on reordering GFX item:', error);
-            return null;
-        }
-    }
-
-    async updateItemSlug(rundownStr, item){// Item: {itemId, rundownId, storyId, itemSlug}
-        const values = {
-            lastupdate: timeConvertors.createTick(),
-            name:item.itemSlug,
-            uid: item.itemId
-        };
-        const sqlQuery = `
-            UPDATE ngn_inews_items SET 
-            lastupdate = @lastupdate, name = @name
-            OUTPUT INSERTED.*
-            WHERE uid = @uid;`;
-    
-        try {
-            const result =await db.execute(sqlQuery, values);
-            // ADD HERE STORY UPDATE
-            if(result.rowsAffected[0] > 0){
-                logger("Registered new GFX item ");
-            } else {
-                logger(`WARNING! GFX ${item.itemId} [${item.ord}] in ${rundownStr}, story num ${item.ord} doesn't exists in DB`);
-            }
-
-        } catch (error) {
-            console.error('Error on storing GFX item:', error);
-            return null;
-        }
-    }
-
-    async deleteItem(rundownStr, item){ //Item: {itemId, rundownId, storyId}
-
-        // Update items hashmap
-        itemsHash.remove(item.itemId); 
-        // Update duplicates cache
-        itemsHash.deleteDuplicate(String(item.itemId));
-
-        const values = {uid: item.itemId};
-        const sqlQuery = `DELETE FROM ngn_inews_items WHERE uid = @uid;`;
-    
-        try {
-            const result =await db.execute(sqlQuery, values);
-            if(result.rowsAffected[0] > 0){
-                logger(`Delete GFX item ${item.itemId} in ${rundownStr}, story num ${item.storyId}`);
-            } else {
-                logger(`WARNING! GFX ${item.itemId} [${item.ord}] in ${rundownStr}, story num ${item.ord} doesn't exists in DB`);
-            }
-
-        } catch (error) {
-            console.error('Error deleting GFX item:', error);
-            return null;
-        }
-
-    } 
-    
-    async deleteItemById(itemId){
-        const values = {uid: itemId};
-        const sqlQuery = `DELETE FROM ngn_inews_items WHERE uid = @uid;`;
-    
-        try {
-            const result =await db.execute(sqlQuery, values);
-            if(result.rowsAffected[0] > 0){
-                logger(`Cleared GFX duplicate item ${itemId}`);
-            }
-
-        } catch (error) {
-            logger(`Failed to delete GFX duplicate on start`);            
-            return null;
-        }
-    }
-
-    // Octopus
     async deleteDbItemsByStoryUid(uid){
         const query = `DELETE FROM ngn_inews_items WHERE story = ${uid}`;
         try {
@@ -354,7 +256,6 @@ class SqlService {
 
     //This func triggered from web  page, when user click "save". 
     //We don't save it to cache! It will be updated from inews-service modify story event.  
-    
     async storeNewItem(item) { // Expect: {name, data, scripts, templateId,productionId}
         const values = {
             name: item.name,
@@ -377,7 +278,6 @@ class SqlService {
     
         try {
             const result = await db.execute(sqlQuery, values);
-            itemsHash.addUnlinked(result.recordset[0].uid);
             return result.recordset[0].uid; // We return it to front page and its stored in mos obj as gfxItem
         } catch (error) {
             console.error('Error on storing GFX item:', error);
@@ -444,7 +344,7 @@ class SqlService {
     }
     
 // ********************* LAST UPDATE && ORD LAST UPDATE FUNCTIONS ********************** //
-    // Octopus
+
     async rundownLastUpdate(rundownStr){
             const rundownMeta = await cache.getRundownList(rundownStr);
             try {
@@ -462,7 +362,7 @@ class SqlService {
                 console.error('Error rundownLastUpdate:', error);
             }     
     }
-    // Octopus
+
     async storyLastUpdate(storyId){
         try {
             const values = {
@@ -478,8 +378,8 @@ class SqlService {
         } catch (error) {
             console.error('Error storyLastUpdate:', error);
         }     
-}
-    // Octopus
+    }
+
     async modifyRundownStr(uid, rundownStr){
         try {
             const values = {
@@ -498,47 +398,8 @@ class SqlService {
         }     
     }
 
-// ********************* DUPLICATE ITEMS FUNCTIONS ********************** //
-
-    async getFullItem(itemUid){
-        const values = {
-            uid:itemUid
-        };
-    
-        const sqlQuery = `
-            SELECT * FROM ngn_inews_items WHERE uid = @uid;
-        `;
-    
-        try {
-            const result = await db.execute(sqlQuery, values);
-            if(result.rowsAffected[0] === 0) return {data:"N/A"};
-            
-            return result.recordset[0];
- 
-        } catch (error) {
-            console.error('Error on fetching item data:', error);
-            return null;
-        }
-    }
-
-    async storeDuplicateItem(item) { // Expect: {name, data, scripts, templateId,productionId}
-
-        const sqlQuery = `
-            INSERT INTO ngn_inews_items (name, lastupdate, production, rundown, story, ord, ordupdate, template, data, scripts, enabled, tag)
-            OUTPUT INSERTED.uid
-            VALUES (@name, @lastupdate, @production, @rundown, @story, @ord, @ordupdate,@template, @data, @scripts, @enabled, @tag);`;
-    
-        try {
-            const result = await db.execute(sqlQuery, item);
-            return result.recordset[0].uid; // We return it to front page and its stored in mos obj as gfxItem
-        } catch (error) {
-            console.error('Error on storing GFX item:', error);
-            return null;
-        }
-    }
-
 // ********************* UN-MONITOR RUNDOWN FROM MOS ********************** //
-    // Octopus
+
     async deleteDbRundown(uid,rundownStr) {
         const values = {
             uid:uid,
@@ -556,7 +417,7 @@ class SqlService {
             console.error('Error un-monitor rundown:', error);
             }
     }
-    // Octopus
+
     async deleteDbStoriesByRundownID(uid){
         const query = `DELETE FROM ngn_inews_stories WHERE rundown = ${uid}`;
         try {
@@ -566,7 +427,7 @@ class SqlService {
             console.error('Error clearing un-monitored stories from SQL:', error);
             }
     }
-    // Octopus
+
     async deleteDbItemsByRundownID(uid){
         const query = `DELETE FROM ngn_inews_items WHERE rundown = ${uid}`;
         try {

@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import sqlService from '../services/sql-service.js';
 
 class ItemsHashmap {
     
@@ -92,18 +91,6 @@ class ItemsHashmap {
         } catch (err) {
             console.error('Error writing to duplicates cache file:', err);
         }
-    }
-
-    async resetDuplicates(){
-        
-        // Read cache on load
-        const cachedDuplicates = fs.readFileSync(this.duplicatesFilePath, 'utf8');
-        // Get duplicates array from cache
-        const duplicatesToDelete = Object.keys(JSON.parse(cachedDuplicates));
-        // Delete duplicates from DB
-        duplicatesToDelete.forEach(async itemId => await sqlService.deleteItemById(itemId));
-        // Clear cache file on load
-        fs.writeFileSync(this.duplicatesFilePath, JSON.stringify(this.duplicates), 'utf8');
     }
 
     isDuplicate(itemId){
