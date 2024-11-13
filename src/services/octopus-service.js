@@ -16,6 +16,7 @@ class OctopusProcessor {
         await sqlService.initialize();
         await mosConnector.connect();
         await mosMediaConnector.connect();
+        mosConnector.sendToClient(mosCommands.reqMachInfo());
         mosConnector.sendToClient(mosCommands.roReqAll());
     }
     
@@ -126,7 +127,8 @@ class OctopusProcessor {
     }
 
     async handleNewStory(story) {        
-        
+        console.log(story)
+
         // Add props to story
         story = await this.constructStory(story);
 

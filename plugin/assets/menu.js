@@ -147,8 +147,10 @@ function createTemplateHtml(template){
 // ******************************************* Comm with inews wrapper logics *******************************************
 
 async function mosMsgFromHost(event) {
+    
     if(blocked) return;
     var message = event.data;
+    console.log(message)
     if (event.origin != getNewsroomOrigin()) { 
         return; 
     }
@@ -175,6 +177,7 @@ async function mosMsgFromHost(event) {
         event.source.postMessage(updatedMosMsg, event.origin);
         console.log("got item request. Collected data from iframe: ", values);
     }
+
 
 }
 
@@ -320,11 +323,20 @@ function showPopup(message, delay=undefined) {
     
   };
 
-// Communication listeners with inews
+// Communication listeners with NCS
 if (window.addEventListener) {
     window.addEventListener('message', mosMsgFromHost, false);
+    console.log("got")
 } else if (window.attachEvent) {
     console.log("window.attachEvent");
     window.attachEvent('onmessage', mosMsgFromHost, false);
+
 }
 getProductions();
+
+function getAppInfo(){
+    const origin = getNewsroomOrigin();
+    window.parent.postMessage("<mos><ncsReqAppInfo/></mos>", getNewsroomOrigin());
+    console.log('sent app info req', origin)
+}
+setTimeout(getAppInfo,4000);

@@ -2,7 +2,6 @@ import appConfig from "../utilities/app-config.js";
 import db from "../1-dal/sql.js";
 import processAndWriteFiles from "../utilities/file-processor.js";
 import cache from "../1-dal/cache.js";
-import itemsHash from "../1-dal/items-hashmap.js";
 import timeConvertors from "../utilities/time-convertors.js";
 import logger from "../utilities/logger.js";
 
