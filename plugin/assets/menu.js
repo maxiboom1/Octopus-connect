@@ -147,10 +147,9 @@ function createTemplateHtml(template){
 // ******************************************* Comm with inews wrapper logics *******************************************
 
 async function mosMsgFromHost(event) {
-    
+    console.log("On plugin handler: ", event.data);
     if(blocked) return;
     var message = event.data;
-    console.log(message)
     if (event.origin != getNewsroomOrigin()) { 
         return; 
     }
@@ -261,16 +260,6 @@ function hideIframe() {
 
 // ******************************************* Utility functions *******************************************
 
-function getNewsroomOrigin() {
-    var qs = document.location.search.split("+").join(" ");
-    var params = {};
-    var regex = /[?&]?([^=]+)=([^&]*)/g;
-    while (tokens = regex.exec(qs)) {
-        params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
-    }
-    return params['origin'];
-}
-
 function extractTagContent(xmlString, tagName) {
     try {
       const parser = new DOMParser();
@@ -326,17 +315,27 @@ function showPopup(message, delay=undefined) {
 // Communication listeners with NCS
 if (window.addEventListener) {
     window.addEventListener('message', mosMsgFromHost, false);
-    console.log("got")
 } else if (window.attachEvent) {
     console.log("window.attachEvent");
     window.attachEvent('onmessage', mosMsgFromHost, false);
 
 }
-getProductions();
+
+function getNewsroomOrigin() {
+    var qs = document.location.search.split("+").join(" ");
+    var params = {};
+    var regex = /[?&]?([^=]+)=([^&]*)/g;
+    while (tokens = regex.exec(qs)) {
+        params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+    }
+    return params['origin'];
+}
 
 function getAppInfo(){
     const origin = getNewsroomOrigin();
-    window.parent.postMessage("<mos><ncsReqAppInfo/></mos>", getNewsroomOrigin());
-    console.log('sent app info req', origin)
+    window.parent.postMessage("<mos><ncsReqAppClose/></mos>", origin); // Attempt to send ncsReqAppInfo
+    console.log('sent app info req', origin); // Confirmed as http://10.10.10.52
 }
-setTimeout(getAppInfo,4000);
+//setTimeout(getAppInfo,6000);
+
+getProductions();

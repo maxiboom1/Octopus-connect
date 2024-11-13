@@ -127,7 +127,6 @@ class OctopusProcessor {
     }
 
     async handleNewStory(story) {        
-        console.log(story)
 
         // Add props to story
         story = await this.constructStory(story);
