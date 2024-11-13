@@ -7,7 +7,7 @@ function mosRouter(msg, port) {
     // if msg.mos.heartbeat exists - the !! convert it to "true"
     switch (true) {
         case !!msg.mos.listMachInfo:
-            logger("NRCS Machine Info: " + JSON.stringify(msg.mos.listMachInfo));
+            logger("Octopus is Alive! \nNCS Machine Info: " + JSON.stringify(msg.mos.listMachInfo,null,2));
             break;
         case !!msg.mos.heartbeat:
             ackService.sendHeartbeat(port);
