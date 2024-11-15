@@ -15,15 +15,15 @@ async function clickOnSave(){
 function getItemData(){
         const _NA_Values = __NA_GetValues();
         const _NA_Scripts = __NA_GetScripts();
-        const templateId = document.body.getAttribute('data-template');
-        const productionId = document.body.getAttribute('data-production');
+        const template = document.body.getAttribute('data-template');
+        const production = document.body.getAttribute('data-production');
 
         return values = {
             name:document.getElementById("nameInput").value,
             data: _NA_Values,
             scripts: _NA_Scripts,
-            templateId: templateId,
-            productionId: productionId
+            template: template,
+            production: production
         }        
 }
 

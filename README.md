@@ -7,6 +7,17 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Change-log
 
+### V 1.0.4
+
+- Implemented duplicate items handling - using itemsHash set we list registered items, once we found item with same gfxId, we copy as new it, get asserted uid and update Octopus item using mosItemReplace.
+- Bug: When have copy of the same item in same story - its doesn't works , we need to handle item create event (now we handle only story create / story replace).
+- Bug: If i have more than 1 item in story - when delete only one story - its doesn't deletes from sql (storyReplace should also handle this case)
+- Overall, mosItemReplace works fantastic, we able to edit items from controller to Octopus. Now is the time to focus on item-events within storyReplace function.
+- Object props names that sent from front on save are changed to same names as in sql. 
+- Items hash-map set created.
+- Separate function in itemsService for register new item and update existing item.
+- getFullItem() new method for fetching from SQL item when we register duplicate.
+
 ### V 1.0.3
 
 - Changed plugin mode on Octopus to 2.8_Web. Its enables small protocol between plugin and host - and plugin can send messages to host and receive responses.

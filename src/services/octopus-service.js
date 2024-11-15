@@ -159,7 +159,7 @@ class OctopusProcessor {
         await sqlService.modifyDbStory(story);
         
         // Update items in SQL
-        await itemsService.registerStoryItems(story);
+        await itemsService.updateStoryItems(story);
         
         // Update cached story
         await cache.saveStory(story);
@@ -287,8 +287,9 @@ class OctopusProcessor {
 
     // Adds to story uid, production, normalizing item for array. Story obj must have "rundownStr" prop!
     async constructStory(story){
-        const rundownMeta = await cache.getRundownList(story.rundownStr);
         story.item = Array.isArray(story.item) ? story.item : [story.item];
+        const rundownMeta = await cache.getRundownList(story.rundownStr);
+        story.roID = rundownMeta.roID;
         story.rundown = rundownMeta.uid;
         story.production = rundownMeta.production;
         return story;

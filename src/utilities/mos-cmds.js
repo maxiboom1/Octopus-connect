@@ -41,22 +41,45 @@ class MosCommands {
         return delimiter;
     }
 
-    storyReady(roID,storyId){
-        return `
+    mosItemReplace(story, el, newUid){
+        const msg =  `
             <mos>
                 <mosID>${this.mosID}</mosID>
                 <ncsID>${this.ncsID}</ncsID>
                 <messageID>1</messageID>
-                <roCtrl>
-                    <roID>${roID}</roID>
-                    <storyID>${storyId}</storyID>
-                    <itemID></itemID>
-                    <command>READY</command>
-                </roCtrl>
-            </mos>`
+                <mosItemReplace>
+                    <roID>${story.roID}</roID>
+                    <storyID>${story.storyID}</storyID>
+                        <item>
+                            <itemID>${el.itemID}</itemID>
+                            <itemSlug>${el.itemSlug}</itemSlug>
+                            <objID></objID>
+                            <objAir>READY</objAir>
+                            <mosID>${el.mosID}</mosID>
+                            <mosExternalMetadata>
+                                <gfxItem>${newUid}</gfxItem>
+                                <gfxTemplate>${el.mosExternalMetadata.gfxTemplate}</gfxTemplate>
+                                <gfxProduction>${el.mosExternalMetadata.gfxProduction}</gfxProduction>
+                                <register>Registered</register>
+                            </mosExternalMetadata>
+                        </item>
+                </mosItemReplace>
+            </mos>`;  
+            return msg;
     }
 
 }
 
 const mosCommands = new MosCommands();
 export default mosCommands;
+
+/*
+{
+      itemID: '1-39',
+      itemSlug: 'מגירה 1 - 123',
+      objID: 60889,
+      mosID: 'newsarts',
+      mosExternalMetadata: [Object]
+    }
+`
+*/

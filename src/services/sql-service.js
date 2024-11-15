@@ -4,6 +4,7 @@ import processAndWriteFiles from "../utilities/file-processor.js";
 import cache from "../1-dal/cache.js";
 import timeConvertors from "../utilities/time-convertors.js";
 import logger from "../utilities/logger.js";
+import itemsHash from "../1-dal/items-hashmap.js";
 
 class SqlService {
 
@@ -251,20 +252,36 @@ class SqlService {
             console.error('Error clearing story items from SQL:', error);
             }
     }
+
+    async getFullItem(itemUid){
+        const values = {uid:itemUid};
+    
+        const sqlQuery = `SELECT * FROM ngn_inews_items WHERE uid = @uid;`;
+    
+        try {
+            const result = await db.execute(sqlQuery, values);
+            return result.recordset[0];
+ 
+        } catch (error) {
+            console.error('Error on fetching item data:', error);
+            return null;
+        }
+    }
+
 // ********************* FRONT-TRIGGERED ITEMS FUNCTIONS ********************** //
 
     //This func triggered from web  page, when user click "save". 
     //We don't save it to cache! It will be updated from inews-service modify story event.  
-    async storeNewItem(item) { // Expect: {name, data, scripts, templateId,productionId}
+    async storeNewItem(item) { // Expect: {name, data, scripts, template,production}
         const values = {
             name: item.name,
             lastupdate: timeConvertors.createTick(),
-            production: item.productionId,
+            production: item.production,
             rundown: "",
             story: "",
             ord: "",
             ordupdate: timeConvertors.createTick(),
-            template: item.templateId,
+            template: item.template,
             data: item.data,
             scripts: item.scripts,
             enabled: 1,
@@ -277,7 +294,7 @@ class SqlService {
     
         try {
             const result = await db.execute(sqlQuery, values);
-            return result.recordset[0].uid; // We return it to front page and its stored in mos obj as gfxItem
+            return result.recordset[0].uid;; // We return it to front page and its stored in mos obj as gfxItem
         } catch (error) {
             console.error('Error on storing GFX item:', error);
             return null;
@@ -308,12 +325,12 @@ class SqlService {
     }
 
     // This func is triggered from a web page, when the user clicks "save" 
-    async updateItemFromFront(item) { // Expect: {name, data, scripts, templateId, productionId, gfxItem}
+    async updateItemFromFront(item) { // Expect: {name, data, scripts, template, production, gfxItem}
         const values = {
             name: item.name,
             lastupdate: timeConvertors.createTick(),
-            production: item.productionId,
-            template: item.templateId,
+            production: item.production,
+            template: item.template,
             data: item.data,
             scripts: item.scripts,
             enabled: 1,

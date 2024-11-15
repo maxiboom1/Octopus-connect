@@ -28,8 +28,8 @@ router.get('/get-item-data/:uid', async (req, res) => {
 router.post('/set-item', async (req, res) => {
   try {
       const item = req.body;
-      const templateUid = await sqlService.storeNewItem(item);
-      res.json(templateUid);
+      const itemUid = await sqlService.storeNewItem(item);
+      res.json(itemUid);
   } catch (error) {
       console.error('Error processing JSON data:', error);
       res.status(400).json("Error processing JSON data");
