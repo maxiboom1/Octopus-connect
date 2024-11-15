@@ -331,11 +331,7 @@ function getNewsroomOrigin() {
     return params['origin'];
 }
 
-function getAppInfo(){
-    const origin = getNewsroomOrigin();
-    window.parent.postMessage("<mos><ncsReqAppClose/></mos>", origin); // Attempt to send ncsReqAppInfo
-    console.log('sent app info req', origin); // Confirmed as http://10.10.10.52
-}
-//setTimeout(getAppInfo,6000);
+// If user opened existing item, host will return the item. If user opened empty plugin - host will return err
+window.parent.postMessage("<mos><ncsItemRequest/></mos>", getNewsroomOrigin()); 
 
 getProductions();

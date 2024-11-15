@@ -14,6 +14,4 @@ async function registerStoryItems(story) {
     }
 }
 
-
-
 export default { registerStoryItems };
