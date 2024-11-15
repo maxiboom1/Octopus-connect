@@ -11,6 +11,7 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 - Changed plugin mode on Octopus to 2.8_Web. Its enables small protocol between plugin and host - and plugin can send messages to host and receive responses.
 - Added ncsItemRequest in menu.js - without that host won"t send item data when user opening existing item from story.
+- Removed "block" from menu.js - its was implemented in inews, here I don't need this.
 
 
 ### V 1.0.2

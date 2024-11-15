@@ -1,7 +1,6 @@
 const originUrl = window.location.origin;
 document.getElementById('productionSelector').addEventListener('change', getTemplates);
 var iframe = document.getElementById('contentIframe');
-var blocked = false;
 let productionsData = [];
 // ******************************************* Menu functions *******************************************
 
@@ -147,8 +146,6 @@ function createTemplateHtml(template){
 // ******************************************* Comm with inews wrapper logics *******************************************
 
 async function mosMsgFromHost(event) {
-    console.log("On plugin handler: ", event.data);
-    if(blocked) return;
     var message = event.data;
     if (event.origin != getNewsroomOrigin()) { 
         return; 
@@ -156,9 +153,6 @@ async function mosMsgFromHost(event) {
     
     // User opened item 
     if (message.indexOf('<ncsItem>') !== -1){
-        //await fetch(`${originUrl}/api/debug/${encodeURIComponent(message)}`, {method: 'GET',}); // DEBUG
-        blocked = true;
-        setTimeout(()=>{blocked = false;},50);
         const templateId = extractTagContent(message, "gfxTemplate");
         const gfxItem = extractTagContent(message, "gfxItem");
         const itemID = extractTagContent(message, "itemID");
@@ -167,7 +161,6 @@ async function mosMsgFromHost(event) {
     }
     
     // User click apply/ok
-    // we should get from iframe  
     if (message.indexOf('<ncsItemRequest/>') !== -1){
         const values = iframe.contentWindow.getItemData();
         values.gfxItem = iframe.contentWindow.getGfxItem();
