@@ -151,8 +151,37 @@ class OctopusProcessor {
     async storyReplace(msg){
         const roID = msg.mos.roElementAction.roID;
         let story = msg.mos.roElementAction.element_source.story;
+        story.item = Array.isArray(story.item) ? story.item : [story.item]; // Normalize to array struct
+        story.rundownStr = cache.getRundownSlugByStoryID(story.storyID);
+        const cachedStory = await cache.getStory(story.rundownStr, story.storyID);
+        story = await this.constructStory(story);
+
+        const event = await itemsService.analyzeEvent(cachedStory, story);
+        
+        if(event.message === "story-change"){
+            // Updates story in SQL
+            await sqlService.modifyDbStory(story);
+            await cache.modifyStoryProps(story);
+            logger("Story name/number changed");
+        }
+        if(event.message === "new-item"){
+            itemsService.addNewItem(cachedStory,story,event.data[0]);
+            logger("Story name/number changed");
+        }
+
+        await sqlService.rundownLastUpdate(story.rundownStr);
+        await sqlService.storyLastUpdate(story.uid);
+        ackService.sendAck(roID);
+    }
+
+    // backup
+    async storyReplace1(msg){
+        const roID = msg.mos.roElementAction.roID;
+        let story = msg.mos.roElementAction.element_source.story;
+        story.item = Array.isArray(story.item) ? story.item : [story.item]; // Normalize to array struct
         story.rundownStr = cache.getRundownSlugByStoryID(story.storyID);
         story = await this.constructStory(story);
+
         story.uid = await cache.getStoryUid(story.rundownStr, story.storyID);
         story.ord = await cache.getStoryOrd(story.rundownStr,story.storyID)
         // Updates story in SQL
@@ -288,6 +317,11 @@ class OctopusProcessor {
     // Adds to story uid, production, normalizing item for array. Story obj must have "rundownStr" prop!
     async constructStory(story){
         story.item = Array.isArray(story.item) ? story.item : [story.item];
+        
+        // Run over items, and assign ord
+        for(let i = 0; i<story.item.length; i++){
+            story.item[i].ord = i;
+        }
         const rundownMeta = await cache.getRundownList(story.rundownStr);
         story.roID = rundownMeta.roID;
         story.rundown = rundownMeta.uid;

@@ -115,12 +115,28 @@ class Cache {
         };
     }
 
+    // Modifying story name && number 
+    async modifyStoryProps(story) {
+        if (this.stories[story.rundownStr] && this.stories[story.rundownStr][story.storyID]) {
+            this.stories[story.rundownStr][story.storyID].name = story.storySlug;
+            this.stories[story.rundownStr][story.storyID].number = story.storyNum;
+        }
+    }
+
     async modifyStoryOrd(rundownStr, storyID, ord) {
         if (this.stories[rundownStr] && this.stories[rundownStr][storyID]) {
             this.stories[rundownStr][storyID].ord = ord;
         }
     }
     
+    async getStory(rundownStr, storyID) {
+        if (await this.isStoryExists(rundownStr, storyID)) {
+            // Return a deep copy of the story object
+            return JSON.parse(JSON.stringify(this.stories[rundownStr][storyID]));
+        }
+        return null;
+    }
+
     async getStoryOrd(rundownStr, storyID){
         return this.stories[rundownStr][storyID].ord
     }

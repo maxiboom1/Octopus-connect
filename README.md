@@ -7,6 +7,10 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Change-log
 
+### V 1.0.5-1
+
+- Middle of event handling - itemsService==>addNewItem.
+
 ### V 1.0.4
 
 - Implemented duplicate items handling - using itemsHash set we list registered items, once we found item with same gfxId, we copy as new it, get asserted uid and update Octopus item using mosItemReplace.
