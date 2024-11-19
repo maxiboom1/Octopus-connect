@@ -7,6 +7,10 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Change-log
 
+### V 1.0.5-2
+
+- Middle of event handling - itemsService==>addNewItem done, should debug.
+
 ### V 1.0.5-1
 
 - Middle of event handling - itemsService==>addNewItem.

@@ -2,17 +2,14 @@ import sqlService from "./sql-service.js";
 import mosConnector from "../1-dal/mos-connector.js";
 import mosCommands from "../utilities/mos-cmds.js";
 import itemsHash from "../1-dal/items-hashmap.js";
+import cache from "../1-dal/cache.js";
 
 async function registerStoryItems(story) {
-    let ord = 0;
+    
     for(const el of story.item){
         console.log('New Item Received');
-        const item = {
-            uid: el.mosExternalMetadata.gfxItem,
-            rundown: story.rundown,
-            story: story.uid,
-            ord:ord
-        };
+        const item = constructItem(el.mosExternalMetadata.gfxItem, story.rundown, story.uid, story.ord);   
+        
         if(itemsHash.isUsed(item.uid)){
             console.log("Hmm. It's Duplicate!");
             
@@ -34,14 +31,64 @@ async function registerStoryItems(story) {
             console.log("Item saved. Items hash is: " + itemsHash.list())
         } 
         
-        ord++;
     }
 }
 
-async function addNewItem(cachedStory, newStory, itemID) {
-    for(const el of newStory.item){
-        console.log(el);
+async function addNewItem(cachedStory, newStory) {
+    
+    for (let i = 0; i < newStory.item.length; i++) {
+        // Step 3: Extract necessary properties
+        const newItem = newStory.item[i];
+        const newGfxItem = newItem.mosExternalMetadata.gfxItem;
+        const newOrd = newItem.ord;
+
+        const cachedItem = cachedStory.item.find(item => item.mosExternalMetadata.gfxItem === newGfxItem);
+        
+        if (cachedItem) {
+            if (cachedItem.ord !== newOrd) {
+                await sqlService.updateItemOrd(newStory.rundown, newGfxItem, newOrd);
+            }
+        } else {
+            // Add new item 
+            const item = constructItem(newGfxItem, cachedStory.rundown, cachedStory.uid, newOrd); 
+            itemsHash.registerItem(item.uid);
+            await sqlService.updateItem(newStory.rundownStr,item);
+            console.log("Item saved. Items hash is: " + itemsHash.list())
+        }
     }
+
+    // Overwrite the whole story in cache (why not?)
+    newStory.uid = cachedStory.uid;
+    newStory.ord = cachedStory.ord;
+    cache.saveStory(newStory);
+}
+
+async function removeItem(cachedStory, newStory, removedItem) {
+    
+    for (let i = 0; i < newStory.item.length; i++) {
+        // Step 3: Extract necessary properties
+        const newItem = newStory.item[i];
+        const newGfxItem = newItem.mosExternalMetadata.gfxItem;
+        const newOrd = newItem.ord;
+
+        const cachedItem = cachedStory.item.find(item => item.mosExternalMetadata.gfxItem === newGfxItem);
+        
+        if (cachedItem) {
+            if (cachedItem.ord !== newOrd) {
+                await sqlService.updateItemOrd(newStory.rundown, newGfxItem, newOrd);
+            }
+        } else {
+            // Add new item 
+            itemsHash.removeItem(removedItem);
+            await sqlService.deleteDbItem(removedItem);
+            console.log(`Item ${removeItem} deleted. Items hash is: ${itemsHash.list()} `);
+        }
+    }
+
+    // Overwrite the whole story in cache (why not?)
+    newStory.uid = cachedStory.uid;
+    newStory.ord = cachedStory.ord;
+    cache.saveStory(newStory);
 }
 
 async function analyzeEvent(story, incomingStory) {
@@ -67,8 +114,8 @@ async function analyzeEvent(story, incomingStory) {
     return {message: "no-change-event", data: null};;
 }
 
+// Helper functions **************************************************
 
-// Helper func
 function analyzeItems(storyItems, incomingStoryItems) {
     // Helper function to extract item IDs from an array of items
     const getItemIDs = items => items.map(item => item.itemID);
@@ -89,8 +136,17 @@ function analyzeItems(storyItems, incomingStoryItems) {
     return { newItemIDs, deletedItemIDs };
 }
 
+function constructItem(gfxItem,rundown,storyUid,ord){
+    return {
+        uid: gfxItem,
+        rundown: rundown,
+        story: storyUid,
+        ord:ord
+    };
+}
 
-export default { registerStoryItems , analyzeEvent, addNewItem};
+
+export default { registerStoryItems , analyzeEvent, addNewItem, removeItem};
 
 
 /*

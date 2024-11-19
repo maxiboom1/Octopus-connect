@@ -149,6 +149,7 @@ class OctopusProcessor {
 
     // Its overwrite the whole story and its items, on any change. Possible optimization might be to compare each item before update them.
     async storyReplace(msg){
+        
         const roID = msg.mos.roElementAction.roID;
         let story = msg.mos.roElementAction.element_source.story;
         story.item = Array.isArray(story.item) ? story.item : [story.item]; // Normalize to array struct
@@ -165,8 +166,12 @@ class OctopusProcessor {
             logger("Story name/number changed");
         }
         if(event.message === "new-item"){
-            itemsService.addNewItem(cachedStory,story,event.data[0]);
-            logger("Story name/number changed");
+            itemsService.addNewItem(cachedStory,story);
+            logger("Item create event");
+        }
+        if(event.message === "remove-item"){
+            itemsService.removeItem(cachedStory,story);
+            logger("Item remove event");
         }
 
         await sqlService.rundownLastUpdate(story.rundownStr);

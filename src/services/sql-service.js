@@ -243,6 +243,32 @@ class SqlService {
         }
     }
 
+    async updateItemOrd(rundownStr, gfxItem, ord) { 
+        const values = {
+            ord: ord,
+            ordupdate: timeConvertors.createTick(),
+            uid: gfxItem
+        };
+        const sqlQuery = `
+            UPDATE ngn_inews_items SET 
+            ord = @ord, ordupdate = @ordupdate
+            OUTPUT INSERTED.*
+            WHERE uid = @uid;`;
+    
+        try {
+            const result =await db.execute(sqlQuery, values);
+            if(result.rowsAffected[0] > 0){
+                logger(`GFX item ${gfxItem}: changed order`); 
+            } else {
+                logger(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
+            }
+
+        } catch (error) {
+            console.error('Error on storing GFX item:', error);
+            return null;
+        }
+    }
+
     async deleteDbItemsByStoryUid(uid){
         const query = `DELETE FROM ngn_inews_items WHERE story = ${uid}`;
         try {
@@ -250,6 +276,16 @@ class SqlService {
             logger(`Cleared story ${uid} items`);
             } catch (error) {
             console.error('Error clearing story items from SQL:', error);
+            }
+    }
+
+    async deleteDbItem(uid){
+        const query = `DELETE FROM ngn_inews_items WHERE uid = ${uid}`;
+        try {
+            await db.execute(query);
+            logger(`Cleared GFX item ${uid}`);
+            } catch (error) {
+            console.error(`Error clearing item ${uid} from SQL:`, error);
             }
     }
 
