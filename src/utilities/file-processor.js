@@ -8,6 +8,7 @@ import logger from "../utilities/logger.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const debugMode = appConfig.debugMode;
 
 /** 
  * Gets templates array @param templates. Takes template.source and injects scripts, css link and plugin panel.
@@ -16,7 +17,7 @@ const __dirname = dirname(__filename);
  * @return templates array without source prop.
  */
 async function processAndWriteFiles(templates) {
-    
+     
     const templatesFolder = path.resolve(__dirname, "../../plugin/templates");
     try {
         await fsPromises.access(templatesFolder);
@@ -30,7 +31,7 @@ async function processAndWriteFiles(templates) {
         const filePath = path.join(templatesFolder, `${uid}.html`);
         await fsPromises.writeFile(filePath, injectedHtml, 'utf-8');
         delete template.source;
-        if (!appConfig.debugMode){
+        if (debugMode){
             logger(`Loaded ${name} template12`);
         }
     }

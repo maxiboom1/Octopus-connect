@@ -4,8 +4,7 @@ import getServerIP from "./src/utilities/host-ip.js";
 import bodyParser from 'body-parser';
 import logger from "./src/utilities/logger.js";
 import routes from "./src/routes/routes.js";
-import octopusService from "./src/services/octopus-service.js";
-
+import appProcessor from "./src/services/app-processor.js";
 const app = express(); 
 
 app.use(cors({origin: '*'}));
@@ -24,5 +23,5 @@ app.listen(port, () => {
     const host = getServerIP();
     logger(`Server service running on port ${port}`);
     logger(`Plugin url: http://${host}:${port}/index.html`)
-    octopusService.initialize();
+    appProcessor.initialize();
 });

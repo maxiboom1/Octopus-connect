@@ -3,8 +3,15 @@ import mosConnector from "../1-dal/mos-connector.js";
 import mosCommands from "../utilities/mos-cmds.js";
 import itemsHash from "../1-dal/items-hashmap.js";
 import cache from "../1-dal/cache.js";
+import appConfig from "../utilities/app-config.js";
+import logger from "../utilities/logger.js";
+
+const debugMode = appConfig.debugMode;
+const debugFunctions = appConfig.debugFunctions;
 
 async function registerStoryItems(story) {
+    
+    if (debugFunctions) logHandler(`registerStoryItems`);
     
     for(const el of story.item){
         console.log('New Item Received');
@@ -36,6 +43,8 @@ async function registerStoryItems(story) {
 
 async function addNewItem(cachedStory, newStory) {
     
+    if (debugFunctions) logHandler(`addNewItem`);
+    
     for (let i = 0; i < newStory.item.length; i++) {
         // Step 3: Extract necessary properties
         const newItem = newStory.item[i];
@@ -63,27 +72,29 @@ async function addNewItem(cachedStory, newStory) {
     cache.saveStory(newStory);
 }
 
-async function removeItem(cachedStory, newStory, removedItem) {
-    
-    for (let i = 0; i < newStory.item.length; i++) {
-        // Step 3: Extract necessary properties
-        const newItem = newStory.item[i];
-        const newGfxItem = newItem.mosExternalMetadata.gfxItem;
-        const newOrd = newItem.ord;
+async function removeItem(cachedStory, newStory) {
+    if (debugFunctions) logHandler(`removeItem`);
 
-        const cachedItem = cachedStory.item.find(item => item.mosExternalMetadata.gfxItem === newGfxItem);
+    for (let i = 0; i < cachedStory.item.length; i++) {
         
-        if (cachedItem) {
-            if (cachedItem.ord !== newOrd) {
-                await sqlService.updateItemOrd(newStory.rundown, newGfxItem, newOrd);
+        const cachedGfxItem = cachedStory.item[i].mosExternalMetadata.gfxItem;
+        const cachedOrd = cachedStory.item[i].ord;
+
+        const newItem = newStory.item.find(item => item.mosExternalMetadata.gfxItem === cachedGfxItem);
+        // Found the item in incoming story ==> so its not deleted one.
+        if (newItem) {
+            // Compare cached ord with new ord
+            if (newItem.ord !== cachedOrd) {
+                await sqlService.updateItemOrd(newStory.rundown, cachedGfxItem, newItem.ord);
             }
         } else {
-            // Add new item 
-            itemsHash.removeItem(removedItem);
-            await sqlService.deleteDbItem(removedItem);
-            console.log(`Item ${removeItem} deleted. Items hash is: ${itemsHash.list()} `);
+            // removed item 
+            itemsHash.removeItem(cachedGfxItem);
+            await sqlService.disableDbItem(cachedGfxItem);
+            console.log(`Item ${cachedGfxItem} disabled. Items hash is: ${itemsHash.list()} `);
         }
     }
+
 
     // Overwrite the whole story in cache (why not?)
     newStory.uid = cachedStory.uid;
@@ -92,6 +103,9 @@ async function removeItem(cachedStory, newStory, removedItem) {
 }
 
 async function analyzeEvent(story, incomingStory) {
+    
+    if (debugFunctions) logHandler(`analyzeEvent`);
+    
     // Check for story changes
     if (story.name !== incomingStory.storySlug || story.number !== incomingStory.storyNum) {
         return {message: "story-change", data: null};
@@ -117,6 +131,9 @@ async function analyzeEvent(story, incomingStory) {
 // Helper functions **************************************************
 
 function analyzeItems(storyItems, incomingStoryItems) {
+    
+    if (debugFunctions) logHandler(`analyzeItems`);
+    
     // Helper function to extract item IDs from an array of items
     const getItemIDs = items => items.map(item => item.itemID);
     
@@ -137,6 +154,9 @@ function analyzeItems(storyItems, incomingStoryItems) {
 }
 
 function constructItem(gfxItem,rundown,storyUid,ord){
+    if (debugFunctions) logHandler(`constructItem`);
+
+    
     return {
         uid: gfxItem,
         rundown: rundown,
@@ -145,6 +165,9 @@ function constructItem(gfxItem,rundown,storyUid,ord){
     };
 }
 
+function logHandler(message){
+    if(debugMode) logger(`Items service: ` + message);
+}
 
 export default { registerStoryItems , analyzeEvent, addNewItem, removeItem};
 

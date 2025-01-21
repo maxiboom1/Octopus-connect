@@ -3,7 +3,7 @@ function logger(msg, err = false){
         console.error(msg);
         // Write to log file etc...
     } else {
-        console.log(`${getCurrentDateTime()} ==>  ${msg}`);
+        console.log(`${getCurrentDateTime()} ${msg}`);
     }
     
 }

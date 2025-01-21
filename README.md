@@ -7,11 +7,19 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Change-log
 
-### V 1.0.5-2
+### V 1.0.5 03
+
+- Lot of cleanups. 
+- Move all initial and rundowns logic handling to separated "app-processor" module.
+- Improved debugging tools - you can set debugMode, showRawMos, and debugFunctions.
+- findRoID is moved to utilities separated file.
+
+
+### V 1.0.5 02
 
 - Middle of event handling - itemsService==>addNewItem done, should debug.
 
-### V 1.0.5-1
+### V 1.0.5 01
 
 - Middle of event handling - itemsService==>addNewItem.
 

@@ -1,43 +1,48 @@
 import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
 import octopusService from "./octopus-service.js";
+import appConfig from "../utilities/app-config.js";
+import appProcessor from "./app-processor.js";
+import findRoID from "../utilities/findRoID.js";
+
+const debugMode = appConfig.debugMode;
 
 function mosRouter(msg, port) {
     // double !! converts expression to boolean - so, 
     // if msg.mos.heartbeat exists - the !! convert it to "true"
     switch (true) {
         case !!msg.mos.listMachInfo:
-            logger("Octopus is Alive! \nNCS Machine Info: " + JSON.stringify(msg.mos.listMachInfo,null,2));
+            logHandler("Octopus is Alive! \nNCS Machine Info: " + JSON.stringify(msg.mos.listMachInfo,null,2));
             break;
         case !!msg.mos.heartbeat:
             ackService.sendHeartbeat(port);
             break;
         case !!msg.mos.roMetadataReplace:
-            octopusService.roMetadataReplace(msg);
+            appProcessor.roMetadataReplace(msg);
             break;         
               
         case msg.mos.roListAll !== undefined:
-            logger(port + " received roListAll");
-            octopusService.roListAll(msg)
+            logHandler(port + " received roListAll");
+            appProcessor.roListAll(msg)
             break;
         case !!msg.mos.roList:
-            logger(port + " received roList");
-            octopusService.roList(msg)
+            logHandler(port + " received roList");
+            appProcessor.roList(msg)
             break;
         case !!msg.mos.roCreate:
-            octopusService.roCreate(msg);
+            appProcessor.roCreate(msg);
             break;
         case !!msg.mos.roReadyToAir:
-            logger(port+ " readyToAir");
+            logHandler(port+ " readyToAir");
             ackService.sendAck(msg.mos.roReadyToAir.roID);
             break;
         case !!msg.mos.roStorySend:
-            logger(port+ " storySend: " + JSON.stringify(msg));
+            logHandler(port+ " storySend: " + JSON.stringify(msg));
             ackService.sendAck(msg.mos.roStorySend.roID);
             break;
         
         case !!msg.mos.roDelete:
-            octopusService.roDelete(msg);
+            appProcessor.roDelete(msg);
             break; 
 
         // ****************** roElementAction complex message with actions ************************
@@ -45,20 +50,24 @@ function mosRouter(msg, port) {
             const action = msg.mos.roElementAction["@_operation"];
 
             if(action === "MOVE"){
+                logHandler(`roElementAction ==> MOVE`);
                 octopusService.storyMove(msg);
             } 
             else if(action === "REPLACE"){
+                logHandler(`roElementAction ==> REPLACE`);
                 octopusService.storyReplace(msg);
             } 
             else if(action === "INSERT"){
+                logHandler(`roElementAction ==> INSERT`);
                 octopusService.insertStory(msg);
             } 
             else if(action === "DELETE"){
+                logHandler(`roElementAction ==> DELETE`);
                 octopusService.deleteStory(msg);
             } 
             
             else {
-                console.log("Unknown roElementAction action: " ,true);
+                logHandler(`Unknown roElementAction action: ${msg.mos}`);
                 ackService.sendAck(msg.mos.roElementAction.roID);
             }
 
@@ -66,11 +75,13 @@ function mosRouter(msg, port) {
             break;      
 
         default:
-            logger('Unknown MOS message: ', true);
-            console.log(JSON.stringify(msg));
-            const roID = octopusService.findRoID(msg);
+            logHandler(`Unknown MOS message: ${JSON.stringify(msg)}`);
+            const roID = findRoID(msg);
             if(roID){ackService.sendAck(roID);}
     }
 }
 
+function logHandler(message){
+    if(debugMode) logger(`Mos-router service: ` + message);
+}
 export default mosRouter;

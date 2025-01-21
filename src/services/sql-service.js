@@ -219,13 +219,14 @@ class SqlService {
             lastupdate: timeConvertors.createTick(),
             rundown: item.rundown,
             story: item.story,
+            enabled: 1,
             ord: item.ord,
             ordupdate: timeConvertors.createTick(),
             uid: item.uid
         };
         const sqlQuery = `
             UPDATE ngn_inews_items SET 
-            lastupdate = @lastupdate, rundown = @rundown, story = @story, ord = @ord, ordupdate = @ordupdate
+            lastupdate = @lastupdate, rundown = @rundown, story = @story, ord = @ord, ordupdate = @ordupdate, enabled = @enabled
             OUTPUT INSERTED.*
             WHERE uid = @uid;`;
     
@@ -258,7 +259,7 @@ class SqlService {
         try {
             const result =await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                logger(`GFX item ${gfxItem}: changed order`); 
+                logger(`GFX item ${gfxItem} order changed`); 
             } else {
                 logger(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
             }
@@ -283,10 +284,36 @@ class SqlService {
         const query = `DELETE FROM ngn_inews_items WHERE uid = ${uid}`;
         try {
             await db.execute(query);
-            logger(`Cleared GFX item ${uid}`);
+            logger(`Cleared GFX item ${uid} from SQL`);
             } catch (error) {
             console.error(`Error clearing item ${uid} from SQL:`, error);
             }
+    }
+
+    async disableDbItem(uid) { 
+        const values = {
+            lastupdate: timeConvertors.createTick(),
+            uid: uid,
+            enabled: 0
+        };
+        const sqlQuery = `
+            UPDATE ngn_inews_items SET 
+            lastupdate = @lastupdate, enabled = @enabled
+            OUTPUT INSERTED.*
+            WHERE uid = @uid;`;
+    
+        try {
+            const result =await db.execute(sqlQuery, values);
+            if(result.rowsAffected[0] > 0){
+                logger(`GFX item ${uid} disabled (Will be removed later)`); 
+            } else {
+                logger(`WARNING! GFX item ${uid} doesn't exists in DB`);
+            }
+
+        } catch (error) {
+            console.error('Error on disabling GFX item:', error);
+            return null;
+        }
     }
 
     async getFullItem(itemUid){

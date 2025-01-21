@@ -1,130 +1,11 @@
-import mosConnector from "../1-dal/mos-connector.js";
-import mosMediaConnector from "../1-dal/mos-media-connector.js";
 import sqlService from "./sql-service.js";
 import cache from "../1-dal/cache.js";
 import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
-import mosCommands from "../utilities/mos-cmds.js";
-import appConfig from "../utilities/app-config.js";
 import itemsService from "./items-service.js";
 
 // MOS 2.8.5
 class OctopusProcessor {
-    
-    async initialize() {
-        logger('Starting Octopus-connect 1.00...');
-        await sqlService.initialize();
-        await mosConnector.connect();
-        await mosMediaConnector.connect();
-        mosConnector.sendToClient(mosCommands.reqMachInfo());
-        mosConnector.sendToClient(mosCommands.roReqAll());
-    }
-    
-    async roMetadataReplace(msg){
-        const roID = msg.mos.roMetadataReplace.roID;
-        const {rundownStr, uid} = await cache.getRundownUidAndStrByRoID(roID);
-        
-        if(rundownStr !== msg.mos.roMetadataReplace.roSlug){
-            const newRundownStr = msg.mos.roMetadataReplace.roSlug;
-            await sqlService.modifyRundownStr(uid, newRundownStr);
-            await cache.modifyRundownStr(rundownStr, newRundownStr);
-            console.log(`RoMetadaReplace: Rundown name changed to ${newRundownStr}`);
-        }
-
-        ackService.sendAck(roID);
-
-    }
-
-    // If we receive some unknown MOS object - we will try to find its roID and return acknowledge, to avoid message stuck and reconnection.
-    findRoID(obj) {
-        if (obj.hasOwnProperty('roID')) {
-            return obj.roID; // Return the roID value if found
-        }
-    
-        for (const key in obj) {
-            // Check if the key is an object itself (and not an array)
-            if (typeof obj[key] === 'object' && obj[key] !== null) {
-                const foundRoID = this.findRoID(obj[key]); // Recursively search in child objects
-                if (foundRoID !== undefined) {
-                    return foundRoID; 
-                }
-            }
-        }
-    
-        return undefined;
-    }
- 
-    async roListAll(msg) {
-        if (msg.mos.roListAll === ""){
-            logger("NCS doesn't have active rundowns.",true);
-            return;
-        }
-        const roArr = [].concat(msg.mos.roListAll.ro); // Normalize ro data
-
-        for(const ro of roArr){
-             const rundownStr = ro.roSlug;
-             const roID = ro.roID;
-             const uid = await sqlService.addDbRundown(rundownStr,roID);
-             await cache.initializeRundown(rundownStr,uid, appConfig.production, roID);
-        }
-        // Now, when cache is updated, hide unwatched rundowns in sql
-        await sqlService.hideUnwatchedRundowns();
-        
-        // Now, loop over all monitored rundowns, and request roReq for each
-        for (const ro of roArr) {
-            const roID = ro.roID;
-            mosConnector.sendToClient(mosCommands.roReq(roID)); 
-        }
-
-    }
-
-    async roList(msg){
-        const roSlug = msg.mos.roList.roSlug;
-        
-        // Normalize `story` to always be an array, handling undefined properly (nested ternary)
-        const stories = msg.mos.roList.story ? (Array.isArray(msg.mos.roList.story) ? msg.mos.roList.story : [msg.mos.roList.story]) : [];
-        let ord = 0;       
-        for(const story of stories){
-            story.rundownStr = roSlug; //Add rundownStr to story
-            story.ord = ord; //Add ord to story
-            await this.handleNewStory(story);
-            ord++;
-        }
-
-    }
-
-    async roCreate(msg){
-        const rundownStr = msg.mos.roCreate.roSlug;
-        const roID = msg.mos.roCreate.roID;
-        
-        // Register rundown in DB and cache
-        const uid = await sqlService.addDbRundown(rundownStr,roID);
-        await cache.initializeRundown(rundownStr,uid, appConfig.production, roID);
-        
-        //Send ack to NCS
-        ackService.sendAck(msg.mos.roCreate.roID);
-        logger(`roCreate: New rundown registered  - ${rundownStr}` );
-        
-        // Send roReq request
-        mosConnector.sendToClient(mosCommands.roReq(roID)); 
-    }
-
-    async roDelete(msg){
-        const {uid,rundownStr} = await cache.getRundownUidAndStrByRoID(msg.mos.roDelete.roID);
-        
-        // Delete rundown, its stories and items from DB
-        await sqlService.deleteDbRundown(uid, rundownStr);
-        await sqlService.deleteDbStoriesByRundownID(uid);
-        await sqlService.deleteDbItemsByRundownID(uid);
-        
-        // Delete rundown stories and items from cache
-        await cache.deleteRundownFromCache(rundownStr);
-        
-        //Send ack to NCS
-        ackService.sendAck(msg.mos.roDelete.roID);
-        logger(`roDelete: ${rundownStr} was completely cleared from anywhere!` );
-        
-    }
 
     async handleNewStory(story) {        
 
@@ -144,8 +25,6 @@ class OctopusProcessor {
         await sqlService.rundownLastUpdate(story.rundownStr);
         
     }
-    
-    // *************************************** Rundowns Element actions *************************************** // 
 
     // Its overwrite the whole story and its items, on any change. Possible optimization might be to compare each item before update them.
     async storyReplace(msg){
@@ -159,49 +38,23 @@ class OctopusProcessor {
 
         const event = await itemsService.analyzeEvent(cachedStory, story);
         
+        // Done and checked
         if(event.message === "story-change"){
-            // Updates story in SQL
+            logger(`Story ${cachedStory.name} metadata changed`);
             await sqlService.modifyDbStory(story);
             await cache.modifyStoryProps(story);
-            logger("Story name/number changed");
         }
         if(event.message === "new-item"){
-            itemsService.addNewItem(cachedStory,story);
             logger("Item create event");
+            await itemsService.addNewItem(cachedStory,story);
         }
         if(event.message === "remove-item"){
-            itemsService.removeItem(cachedStory,story);
             logger("Item remove event");
+            await itemsService.removeItem(cachedStory,story);
         }
 
         await sqlService.rundownLastUpdate(story.rundownStr);
         await sqlService.storyLastUpdate(story.uid);
-        ackService.sendAck(roID);
-    }
-
-    // backup
-    async storyReplace1(msg){
-        const roID = msg.mos.roElementAction.roID;
-        let story = msg.mos.roElementAction.element_source.story;
-        story.item = Array.isArray(story.item) ? story.item : [story.item]; // Normalize to array struct
-        story.rundownStr = cache.getRundownSlugByStoryID(story.storyID);
-        story = await this.constructStory(story);
-
-        story.uid = await cache.getStoryUid(story.rundownStr, story.storyID);
-        story.ord = await cache.getStoryOrd(story.rundownStr,story.storyID)
-        // Updates story in SQL
-        await sqlService.modifyDbStory(story);
-        
-        // Update items in SQL
-        await itemsService.updateStoryItems(story);
-        
-        // Update cached story
-        await cache.saveStory(story);
-
-        // Update last updates to story and rundown
-        await sqlService.rundownLastUpdate(story.rundownStr);
-        await sqlService.storyLastUpdate(story.uid);
-        
         ackService.sendAck(roID);
     }
 
@@ -338,7 +191,7 @@ class OctopusProcessor {
         await cache.modifyStoryOrd(rundownStr, storyID, ord);
         await sqlService.modifyBbStoryOrd(rundownStr, storyUid, storyName, ord); 
     }
-    
+
 }
 
 
