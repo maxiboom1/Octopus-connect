@@ -12,7 +12,7 @@ import octopusService from "./octopus-service.js";
 class AppProcessor {
     
     async initialize() {
-        logger('Starting Octopus-connect 1.00...');
+        logger(`Starting Octopus-Connect ${appConfig.version}`);
         await sqlService.initialize();
         await mosConnector.connect();
         await mosMediaConnector.connect();
@@ -46,7 +46,6 @@ class AppProcessor {
     
     async roList(msg){
         const roSlug = msg.mos.roList.roSlug;
-        console.log(msg);
 
         // Normalize `story` to always be an array, handling undefined properly (nested ternary)
         const stories = msg.mos.roList.story ? (Array.isArray(msg.mos.roList.story) ? msg.mos.roList.story : [msg.mos.roList.story]) : [];

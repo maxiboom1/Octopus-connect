@@ -3,10 +3,12 @@ import cache from "../1-dal/cache.js";
 import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
 import itemsService from "./items-service.js";
+import deleteManager from "../utilities/delete-manager.js";
 
 // MOS 2.8.5
 class OctopusProcessor {
-
+    
+    // Triggered from roList incoming mos message only on new rundown creation
     async handleNewStory(story) {        
 
         // Add props to story
@@ -26,7 +28,7 @@ class OctopusProcessor {
         
     }
 
-    // Its overwrite the whole story and its items, on any change. Possible optimization might be to compare each item before update them.
+    // Story-modify event. Its overwrite the whole story and its items, on any change.
     async storyReplace(msg){
         
         const roID = msg.mos.roElementAction.roID;
@@ -153,7 +155,7 @@ class OctopusProcessor {
             if(currentOrd < deletedOrd ) continue;
             
             if(currentOrd === deletedOrd){
-                // Add here Delete all story items!
+                await deleteManager.deleteItemByStoryUid(rundownStr, sourceStoryID ,stories[sourceStoryID].uid);
                 await cache.deleteStory(rundownStr, sourceStoryID);
                 await sqlService.deleteStory(rundownStr, stories[storyID].uid);
             } else { 
@@ -162,8 +164,8 @@ class OctopusProcessor {
                 await sqlService.modifyBbStoryOrd(rundownStr, stories[storyID].uid, stories[storyID].name, currentOrd-1); 
             }
         }
-        // Delete all items with deleted story uid
-        await sqlService.deleteDbItemsByStoryUid(stories[sourceStoryID].uid);
+
+
         // Update rundown last update
         await sqlService.rundownLastUpdate(rundownStr);
         // Send ack to mos

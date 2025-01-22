@@ -102,7 +102,6 @@ class Cache {
     }
 
     async saveStory(story) {
-
         this.stories[story.rundownStr][story.storyID] = {
             uid:story.uid,
             storyID:story.storyID,
@@ -135,6 +134,24 @@ class Cache {
             return JSON.parse(JSON.stringify(this.stories[rundownStr][storyID]));
         }
         return null;
+    }
+
+    async getItemsArrByStoryID(rundownStr, storyID) {
+        
+        const rundown = this.stories[rundownStr];
+        
+        // Return empty array if rundownSlug is not found
+        if (!rundown) { return []; }
+    
+        const story = rundown[storyID];
+        
+        // Return empty array if storyID is not found
+        if (!story) { return []; }
+    
+        // Extract gfxItem values from the items array
+        const itemsIdArr = story.item.map(item => item.mosExternalMetadata.gfxItem);
+        
+        return itemsIdArr;
     }
 
     async getStoryOrd(rundownStr, storyID){

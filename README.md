@@ -5,7 +5,16 @@
 
 Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on "Inews-connect" repo. The main dif, is that while in Inews-connect the transport protocol was FTP, in this project we setup connection to MOS-enabled NRCS.
 
-## Change-log
+## Application notes
+
+### V 1.0.6
+
+- Implemented delete manager. All Item delete events pass thru this class. 
+The `DeleteManager` class provides methods for managing the deletion of items from a database and an in-memory cache. 
+It supports both bulk deletions of items associated with a story and single item deletions.
+* Once item/story sent to delete - its been disabled immediately.
+* Deletions are scheduled with a delay - so if user cut/paste items or stories, we wont loose the data.
+* Ensure that the cache and database are properly synchronized to prevent data inconsistencies.
 
 ### V 1.0.5 03
 

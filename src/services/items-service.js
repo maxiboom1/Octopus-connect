@@ -5,6 +5,7 @@ import itemsHash from "../1-dal/items-hashmap.js";
 import cache from "../1-dal/cache.js";
 import appConfig from "../utilities/app-config.js";
 import logger from "../utilities/logger.js";
+import deleteManager from "../utilities/delete-manager.js";
 
 const debugMode = appConfig.debugMode;
 const debugFunctions = appConfig.debugFunctions;
@@ -14,28 +15,24 @@ async function registerStoryItems(story) {
     if (debugFunctions) logHandler(`registerStoryItems`);
     
     for(const el of story.item){
-        console.log('New Item Received');
+        
         const item = constructItem(el.mosExternalMetadata.gfxItem, story.rundown, story.uid, story.ord);   
         
         if(itemsHash.isUsed(item.uid)){
-            console.log("Hmm. It's Duplicate!");
-            
+
             // Get original item
             const originalItem = await sqlService.getFullItem(item.uid); 
-            console.log("Fetching original Item...");
-            
+ 
             // Copy it to Sql, get new uid 
             const assertedUid = await sqlService.storeNewItem(originalItem);
-            console.log("Saving original item as new with id: " + assertedUid);
             
             // Send itemReplace to Host
             mosConnector.sendToClient(mosCommands.mosItemReplace(story,el,assertedUid));
-            console.log("Sending mosItemReplace to update Octopus");
-
+            console.log(`Saving duplicate item ${assertedUid}, and send mosItemReplace to NRCS`);
         } else {
             itemsHash.registerItem(item.uid);
             await sqlService.updateItem(story.rundownStr,item);
-            console.log("Item saved. Items hash is: " + itemsHash.list())
+            console.log("New Item saved.");
         } 
         
     }
@@ -46,7 +43,6 @@ async function addNewItem(cachedStory, newStory) {
     if (debugFunctions) logHandler(`addNewItem`);
     
     for (let i = 0; i < newStory.item.length; i++) {
-        // Step 3: Extract necessary properties
         const newItem = newStory.item[i];
         const newGfxItem = newItem.mosExternalMetadata.gfxItem;
         const newOrd = newItem.ord;
@@ -89,8 +85,7 @@ async function removeItem(cachedStory, newStory) {
             }
         } else {
             // removed item 
-            itemsHash.removeItem(cachedGfxItem);
-            await sqlService.disableDbItem(cachedGfxItem);
+            await deleteManager.deleteItem(cachedGfxItem);
             console.log(`Item ${cachedGfxItem} disabled. Items hash is: ${itemsHash.list()} `);
         }
     }

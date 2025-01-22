@@ -233,7 +233,7 @@ class SqlService {
         try {
             const result =await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                logger(`GFX item in ${rundownStr}, story ${item.story} updated`); 
+                //logger(`GFX item in ${rundownStr}, story ${item.story} updated`); 
             } else {
                 logger(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
             }
@@ -270,16 +270,6 @@ class SqlService {
         }
     }
 
-    async deleteDbItemsByStoryUid(uid){
-        const query = `DELETE FROM ngn_inews_items WHERE story = ${uid}`;
-        try {
-            await db.execute(query);
-            logger(`Cleared story ${uid} items`);
-            } catch (error) {
-            console.error('Error clearing story items from SQL:', error);
-            }
-    }
-
     async deleteDbItem(uid){
         const query = `DELETE FROM ngn_inews_items WHERE uid = ${uid}`;
         try {
@@ -305,15 +295,50 @@ class SqlService {
         try {
             const result =await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                logger(`GFX item ${uid} disabled (Will be removed later)`); 
+                logger(`Item ${uid} has been disabled`); 
             } else {
-                logger(`WARNING! GFX item ${uid} doesn't exists in DB`);
+                logger(`WARNING! Item ${uid} doesn't exists in DB`);
             }
 
         } catch (error) {
             console.error('Error on disabling GFX item:', error);
             return null;
         }
+    }
+
+    async disableDbItemsByStoryUid(storyID) {  
+        const values = {
+            lastupdate: timeConvertors.createTick(),
+            story: storyID,
+            enabled: 0
+        };
+        const sqlQuery = `
+            UPDATE ngn_inews_items SET 
+            lastupdate = @lastupdate, enabled = @enabled
+            OUTPUT INSERTED.*
+            WHERE story = @story;`;
+    
+        try {
+            const result = await db.execute(sqlQuery, values);
+            if(result.rowsAffected[0] > 0){
+                logger(`Items in ${storyID} disabled`);
+            } else {
+                logger(`WARNING! No items of story ${storyID} found in DB`);
+            }
+
+        } catch (error) {
+            console.error(`Error on disabling GFX items in story ${storyID}:`, error);
+        }
+    }
+
+    async deleteDbItemsByStoryUid(uid){
+        const query = `DELETE FROM ngn_inews_items WHERE story = ${uid}`;
+        try {
+            await db.execute(query);
+            logger(`Cleared story ${uid} items`);
+            } catch (error) {
+            console.error('Error clearing story items from SQL:', error);
+            }
     }
 
     async getFullItem(itemUid){
