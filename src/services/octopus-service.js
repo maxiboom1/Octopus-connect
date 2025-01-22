@@ -61,6 +61,7 @@ class OctopusProcessor {
     }
 
     async storyMove(msg) {
+        console.log("Move story START");
         const roID = msg.mos.roElementAction.roID; // roID
         const rundownStr = cache.getRundownSlugByRoID(roID); // rundownSlug
         const sourceStoryID = msg.mos.roElementAction.element_source.storyID; // Moved story
@@ -105,9 +106,12 @@ class OctopusProcessor {
         await sqlService.rundownLastUpdate(rundownStr);
 
         ackService.sendAck(roID);
+
+        console.log("Move story END");
     }
 
     async insertStory(msg) {
+        console.log(`Insert story func ENTER`)
         const roID = msg.mos.roElementAction.roID; // roID
         const rundownStr = cache.getRundownSlugByRoID(roID); // rundownSlug
         const targetStoryID = msg.mos.roElementAction.element_target.storyID;
@@ -136,9 +140,12 @@ class OctopusProcessor {
         story.ord = targetOrd;
         story.rundownStr = rundownStr;
         // Store new story and its items
-        await this.handleNewStory(story);
+        await this.handleNewStory(story); // BUG!!! we dont pass story ord 
         
         ackService.sendAck(roID);
+
+        console.log(`Insert story func END`)
+
     }
 
     async deleteStory(msg) {

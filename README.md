@@ -7,6 +7,15 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Application notes
 
+### V 1.0.7
+
+- Bug: When copy more than 1 story and paste them in lineup, story orders gets wrong.
+- what happens to items on un monitor?
+- how to assign productions to lineups?
+- Some debug logs.
+
+
+
 ### V 1.0.6
 
 - Implemented delete manager. All Item delete events pass thru this class. 

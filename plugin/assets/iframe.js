@@ -56,6 +56,7 @@ function createMosMessage(){
                     <gfxItem>${gfxItem}</gfxItem>
                     <gfxTemplate>${templateId}</gfxTemplate>
                     <gfxProduction>${productionId}</gfxProduction>
+                    <register></register>
                 </mosExternalMetadata>
             </item>
         </ncsItem>

@@ -447,6 +447,35 @@ class SqlService {
         }
     }
     
+    async storeNewDuplicate(item) { // Expect: {name, production, rundown, story, ord, scripts, template, data, scripts}
+        const values = {
+            name: item.name,
+            lastupdate: timeConvertors.createTick(),
+            production: item.production,
+            rundown: item.rundown,
+            story: item.story,
+            ord: item.ord,
+            ordupdate: timeConvertors.createTick(),
+            template: item.template,
+            data: item.data,
+            scripts: item.scripts,
+            enabled: 1,
+            tag: "",
+        };
+        const sqlQuery = `
+            INSERT INTO ngn_inews_items (name, lastupdate, production, rundown, story, ord, ordupdate, template, data, scripts, enabled, tag)
+            OUTPUT INSERTED.uid
+            VALUES (@name, @lastupdate, @production, @rundown, @story, @ord, @ordupdate,@template, @data, @scripts, @enabled, @tag);`;
+    
+        try {
+            const result = await db.execute(sqlQuery, values);
+            return result.recordset[0].uid;; // We return it to front page and its stored in mos obj as gfxItem
+        } catch (error) {
+            console.error('Error on storing GFX item:', error);
+            return null;
+        }
+    }
+
 // ********************* LAST UPDATE && ORD LAST UPDATE FUNCTIONS ********************** //
 
     async rundownLastUpdate(rundownStr){

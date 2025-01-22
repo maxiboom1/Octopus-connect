@@ -3,7 +3,8 @@ class ItemsHashmap {
         this.items = new Set();
     }
     registerItem(uid) {
-        this.items.add(uid);
+
+        this.items.add(Number(uid));
     }
     removeItem(uid) {
         this.items.delete(uid);

@@ -10,30 +10,47 @@ import deleteManager from "../utilities/delete-manager.js";
 const debugMode = appConfig.debugMode;
 const debugFunctions = appConfig.debugFunctions;
 
+
+
 async function registerStoryItems(story) {
     
     if (debugFunctions) logHandler(`registerStoryItems`);
-    
+    let ord = 0;
     for(const el of story.item){
         
-        const item = constructItem(el.mosExternalMetadata.gfxItem, story.rundown, story.uid, story.ord);   
+        const item = constructItem(el.mosExternalMetadata.gfxItem, story.rundown, story.uid, ord);   
         
         if(itemsHash.isUsed(item.uid)){
 
             // Get original item
             const originalItem = await sqlService.getFullItem(item.uid); 
- 
-            // Copy it to Sql, get new uid 
-            const assertedUid = await sqlService.storeNewItem(originalItem);
             
+            const duplicate = {
+                name: originalItem.name,
+                production: originalItem.production,
+                rundown: story.rundown,
+                story: story.uid,
+                ord: ord,
+                template: originalItem.template,
+                data: originalItem.data,
+                scripts: originalItem.scripts
+            }
+
+            // Copy it to Sql, get new uid 
+            const assertedUid = await sqlService.storeNewDuplicate(duplicate);
+            
+            itemsHash.registerItem(assertedUid);
+
             // Send itemReplace to Host
             mosConnector.sendToClient(mosCommands.mosItemReplace(story,el,assertedUid));
+
             console.log(`Saving duplicate item ${assertedUid}, and send mosItemReplace to NRCS`);
         } else {
             itemsHash.registerItem(item.uid);
             await sqlService.updateItem(story.rundownStr,item);
-            console.log("New Item saved.");
-        } 
+            console.log(`New Item ${item.uid} created`);
+        }
+        ord++; 
         
     }
 }

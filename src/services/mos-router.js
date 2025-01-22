@@ -7,7 +7,7 @@ import findRoID from "../utilities/findRoID.js";
 
 const debugMode = appConfig.debugMode;
 
-function mosRouter(msg, port) {
+async function mosRouter(msg, port) {
     // double !! converts expression to boolean - so, 
     // if msg.mos.heartbeat exists - the !! convert it to "true"
     switch (true) {
@@ -18,19 +18,19 @@ function mosRouter(msg, port) {
             ackService.sendHeartbeat(port);
             break;
         case !!msg.mos.roMetadataReplace:
-            appProcessor.roMetadataReplace(msg);
+            await appProcessor.roMetadataReplace(msg);
             break;         
               
         case msg.mos.roListAll !== undefined:
             logHandler(port + " received roListAll");
-            appProcessor.roListAll(msg)
+            await appProcessor.roListAll(msg)
             break;
         case !!msg.mos.roList:
             logHandler(port + " received roList");
-            appProcessor.roList(msg)
+            await appProcessor.roList(msg)
             break;
         case !!msg.mos.roCreate:
-            appProcessor.roCreate(msg);
+            await appProcessor.roCreate(msg);
             break;
         case !!msg.mos.roReadyToAir:
             logHandler(port+ " readyToAir");
@@ -42,7 +42,7 @@ function mosRouter(msg, port) {
             break;
         
         case !!msg.mos.roDelete:
-            appProcessor.roDelete(msg);
+            await appProcessor.roDelete(msg);
             break; 
 
         // ****************** roElementAction complex message with actions ************************
@@ -51,19 +51,19 @@ function mosRouter(msg, port) {
 
             if(action === "MOVE"){
                 logHandler(`roElementAction ==> MOVE`);
-                octopusService.storyMove(msg);
+                await octopusService.storyMove(msg);
             } 
             else if(action === "REPLACE"){
                 logHandler(`roElementAction ==> REPLACE`);
-                octopusService.storyReplace(msg);
+                await octopusService.storyReplace(msg);
             } 
             else if(action === "INSERT"){
                 logHandler(`roElementAction ==> INSERT`);
-                octopusService.insertStory(msg);
+                await octopusService.insertStory(msg);
             } 
             else if(action === "DELETE"){
                 logHandler(`roElementAction ==> DELETE`);
-                octopusService.deleteStory(msg);
+                await octopusService.deleteStory(msg);
             } 
             
             else {
