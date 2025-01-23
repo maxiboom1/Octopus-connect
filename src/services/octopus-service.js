@@ -4,6 +4,7 @@ import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
 import itemsService from "./items-service.js";
 import deleteManager from "../utilities/delete-manager.js";
+import sql from "../1-dal/sql.js";
 
 // MOS 2.8.5
 class OctopusProcessor {
@@ -111,41 +112,35 @@ class OctopusProcessor {
     }
 
     async insertStory(msg) {
-        console.log(`Insert story func ENTER`)
-        const roID = msg.mos.roElementAction.roID; // roID
-        const rundownStr = cache.getRundownSlugByRoID(roID); // rundownSlug
-        const targetStoryID = msg.mos.roElementAction.element_target.storyID;
-        const stories = await cache.getRundown(rundownStr); // Get copy of stories
-        // In case there are no stories yet in RD
-        const targetOrd = (stories[targetStoryID] && stories[targetStoryID].ord) ? stories[targetStoryID].ord: 0;
+        
+        const {roID,rundownStr,targetStoryID,story} = this.propsExtractor(msg);
+        console.log('targetStoryID',targetStoryID, 'source: ', story.storyID);
+        
+        // Missing target means the insert story is on last position
+        if(targetStoryID === ""){
+            const storiesLength = await cache.getRundownLength(rundownStr);            
+            story.ord = storiesLength === 0? 0: storiesLength + 1;
 
-        // Run over all stories in RD, to sync orders
-        for (const storyID in stories) {
-            const currentOrd = stories[storyID].ord;
+            console.log(`CASE-0: storiesLength: ${storiesLength}, story.ord: ${story.ord}`);
+
+        } else {
+            const targetOrd = await sqlService.getStoryOrdByStoryID(targetStoryID);
+            const storyIDsArr = await cache.getSortedStoriesIdArrByOrd(rundownStr, targetOrd);
             
-            // Bypass all stories above inserted
-            if(currentOrd < targetOrd) continue;
+            console.log(`CASE-1: targetOrd: ${targetOrd}, storyIDsArr ${storyIDsArr}`);
             
-            // Increase stories ord from target to the end of list
-            if(currentOrd >= targetOrd){
-                await cache.modifyStoryOrd(rundownStr, storyID, currentOrd+1);
-                await sqlService.modifyBbStoryOrd(rundownStr, stories[storyID].uid, stories[storyID].name, currentOrd+1); 
+            for(let i = 0; i<storyIDsArr.length; i++){
+                const newStoryOrder = targetOrd + i + 1;
+                await cache.modifyStoryOrd(rundownStr, storyIDsArr[i], newStoryOrder);
+                await sqlService.modifyBbStoryOrdByStoryID(storyIDsArr[i], newStoryOrder);                 
             }
-
+            story.ord = targetOrd;
         }
-        
-        const story = msg.mos.roElementAction.element_source.story; // Inserted story
-        
-        // Set props to inserted story
-        story.ord = targetOrd;
+
         story.rundownStr = rundownStr;
         // Store new story and its items
-        await this.handleNewStory(story); // BUG!!! we dont pass story ord 
-        
+        await this.handleNewStory(story); 
         ackService.sendAck(roID);
-
-        console.log(`Insert story func END`)
-
     }
 
     async deleteStory(msg) {
@@ -200,6 +195,15 @@ class OctopusProcessor {
         await cache.modifyStoryOrd(rundownStr, storyID, ord);
         await sqlService.modifyBbStoryOrd(rundownStr, storyUid, storyName, ord); 
     }
+
+    propsExtractor(msg){
+        const roID = msg.mos.roElementAction.roID; 
+        const rundownStr = cache.getRundownSlugByRoID(roID); 
+        const targetStoryID = msg.mos.roElementAction.element_target.storyID;
+        const story = msg.mos.roElementAction.element_source.story; // Inserted story
+        return {roID,rundownStr,targetStoryID,story}
+    }
+
 
 }
 

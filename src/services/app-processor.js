@@ -10,13 +10,17 @@ import octopusService from "./octopus-service.js";
 
 // MOS 2.8.5
 class AppProcessor {
+    constructor() {
+        this.roQueue = []; // Queue to store rundown IDs
+        this.pendingRequest = false; // Flag to track if a request is in progress
+    }
     
     async initialize() {
-        logger(`Starting Octopus-Connect ${appConfig.version}`);
+        logger(`Starting Octopus-Connect App ${appConfig.version}`);
         await sqlService.initialize();
         await mosConnector.connect();
         await mosMediaConnector.connect();
-        mosConnector.sendToClient(mosCommands.reqMachInfo());
+        //mosConnector.sendToClient(mosCommands.reqMachInfo());
         mosConnector.sendToClient(mosCommands.roReqAll());// Start point - sends roReqAll and server receives roListAll
     }
     
@@ -32,18 +36,26 @@ class AppProcessor {
              const roID = ro.roID;
              const uid = await sqlService.addDbRundown(rundownStr,roID);
              await cache.initializeRundown(rundownStr,uid, appConfig.production, roID);
+             this.roQueue.push(roID); // Add roID to queue
         }
         // Now, when cache is updated, hide unwatched rundowns in sql
         await sqlService.hideUnwatchedRundowns();
         
-        // Now, loop over all monitored rundowns, and request roReq for each
-        for (const ro of roArr) {
-            const roID = ro.roID;
-            mosConnector.sendToClient(mosCommands.roReq(roID)); 
+        // Start processing the queue
+        this.processNextRoReq();
+        
+    }
+
+    async processNextRoReq() {
+        if (this.pendingRequest || this.roQueue.length === 0) {
+            return; // Exit if a request is already in progress or the queue is empty
         }
 
+        this.pendingRequest = true; // Mark a request as in progress
+        const roID = this.roQueue.shift(); // Get the next roID from the queue
+        mosConnector.sendToClient(mosCommands.roReq(roID));
     }
-    
+
     async roList(msg){
         const roSlug = msg.mos.roList.roSlug;
 
@@ -56,6 +68,11 @@ class AppProcessor {
             await octopusService.handleNewStory(story);
             ord++;
         }
+        logger(`Loaded rundown ${roSlug}`);
+
+        // Mark the current request as complete and process the next roReq
+        this.pendingRequest = false;
+        this.processNextRoReq();
 
     }
 
@@ -102,9 +119,6 @@ class AppProcessor {
             await cache.modifyRundownStr(rundownStr, newRundownStr);
             logger(`RoMetadaReplace: Rundown name changed to ${newRundownStr}`);
         }
-
-        ackService.sendAck(roID);
-
     }
     
 }

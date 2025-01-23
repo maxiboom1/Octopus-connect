@@ -7,6 +7,17 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Application notes
 
+### V 1.1.0
+
+- Remove un-necessary logging.
+- Completely new insert handling logic: The flow is: 
+    Received insert event, then: 
+    CASE-1: if no target story attached, means the insert is on last position. Then, using getRundownLength from cache we get rundown stories length, and set received length +1 to inserted story, or 0 if the length is 0 (Its first story in empty rundown)
+    CASE-2: if target attached, we perform sql fetch to get targets ord assign it to inserted story. Then, to increase order of shifted stories, using getSortedStoriesIdArrByOrd we fetching and increment their orders. 
+- Implemented queue logic on roReq commands. Instead fire them in stack, we fire them them one by one, making sure that we received roList, process it, and only then fire the next roReq.
+This is the basics in MOS protocol. We need to do the same with mosItemReplace requests. Especially on big data copy/move. This will be next update.
+- New SQL methods getStoryOrdByStoryID and modifyBbStoryOrdByStoryID
+
 ### V 1.0.7
 
 - Bug: When copy more than 1 story and paste them in lineup, story orders gets wrong.

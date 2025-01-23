@@ -19,7 +19,6 @@ async function registerStoryItems(story) {
     for(const el of story.item){
         
         const item = constructItem(el.mosExternalMetadata.gfxItem, story.rundown, story.uid, ord);   
-        
         if(itemsHash.isUsed(item.uid)){
 
             // Get original item
@@ -41,7 +40,7 @@ async function registerStoryItems(story) {
             
             itemsHash.registerItem(assertedUid);
 
-            // Send itemReplace to Host
+            //Send itemReplace to Host
             mosConnector.sendToClient(mosCommands.mosItemReplace(story,el,assertedUid));
 
             console.log(`Saving duplicate item ${assertedUid}, and send mosItemReplace to NRCS`);

@@ -66,6 +66,12 @@ router.get('/getstories', async (req, res) => {
   res.json(data);
 });
 
+// Get http://serverAddr:4001/api/getstories
+router.get('/debug', async (req, res) => {
+    const data = await cache.getStories();
+    res.json(data);
+  });
+
 // Get http://serverAddr:4001/api/getdata
 router.get('/debug/:data', async (req, res) => {
   const data = req.params.data;

@@ -1,0 +1,232 @@
+
+<Props>
+	<String n="mosId">newsarts</String>
+	<String n="shortName"></String>
+	<Null n="foregroundColor"/>
+	<Null n="backgroundColor"/>
+	<Boolean n="defaultForQuickCG" v="f"/>
+	<String n="ncsId">octopus</String>
+	<String n="version">2.8.5</String>
+	<Integer n="octopusMediaPort" v="10540"/>
+	<Integer n="octopusRundownPort" v="10541"/>
+	<String n="octopusIP">10.10.10.58</String>
+	<Integer n="responseTimeout" v="10"/>
+	<Integer n="mosListAllResponseTimeout" v="10"/>
+	<Integer n="totalTimeout" v="10"/>
+	<Boolean n="sendOtherObjs" v="f"/>
+	<Boolean n="sendEmptyElements" v="f"/>
+	<Boolean n="sendEmptyStories" v="f"/>
+	<Boolean n="sendSkipped" v="f"/>
+	<Boolean n="useOctextSkip" v="t"/>
+	<Boolean n="sendSubitems" v="f"/>
+	<Boolean n="useQuickCG" v="f"/>
+	<Boolean n="sendQuickCGAsSubitems" v="f"/>
+	<Boolean n="hideFromCGDeviceList" v="f"/>
+	<Boolean n="sendInserts" v="f"/>
+	<Boolean n="sendInsertsAsMosObjs" v="f"/>
+	<Boolean n="sendInsertsAsChained" v="f"/>
+	<Boolean n="sendProdReq" v="f"/>
+	<Boolean n="ignoreProdReq" v="f"/>
+	<Boolean n="sendStoryCustomFields" v="t"/>
+	<Boolean n="sendRundownCustomFields" v="t"/>
+	<Boolean n="sendRoChannel" v="f"/>
+	<Boolean n="sendManualItemTrigger" v="f"/>
+	<Boolean n="sendAltscripts" v="f"/>
+	<Boolean n="sendAssets" v="f"/>
+	<Boolean n="roMetadataReplace" v="t"/>
+	<Enum n="elemItemEdStart" v="octopus.server.entity.exchange.mos.MosDeviceRemote$SendItemEdTime.NEVER"/>
+	<Enum n="elemItemEdDur" v="octopus.server.entity.exchange.mos.MosDeviceRemote$SendItemEdTime.NEVER"/>
+	<Enum n="subelemItemEdStart" v="octopus.server.entity.exchange.mos.MosDeviceRemote$SendItemEdTime.NEVER"/>
+	<Enum n="subelemItemEdDur" v="octopus.server.entity.exchange.mos.MosDeviceRemote$SendItemEdTime.NEVER"/>
+	<Boolean n="itemEdStartMeansIn" v="f"/>
+	<Boolean n="acceptsItemEdStartAndDurFromPlugin" v="f"/>
+	<Boolean n="acceptsItemChannelFromPlugin" v="f"/>
+	<Boolean n="sendsItemEdStartAndDurToPlugin" v="f"/>
+	<Boolean n="sendsItemChannelToPlugin" v="f"/>
+	<String n="refreshMethod">none</String>
+	<Boolean n="avoidRoReplace" v="f"/>
+	<Boolean n="resendOnlyReplacesStories" v="t"/>
+	<String n="roSlugPattern">%TYPE% %START%</String>
+	<Integer n="autoRefreshInterval" v="0"/>
+	<Boolean n="sendStoryTexts" v="f"/>
+	<Boolean n="promptElementLabels" v="f"/>
+	<Boolean n="promptElementDurs" v="f"/>
+	<Boolean n="promptPresenters" v="f"/>
+	<Boolean n="sendIgnoredMosObjs" v="t"/>
+	<Boolean n="sendIgnoredText" v="f"/>
+	<Boolean n="sendAllStoryTextElements" v="f"/>
+	<Integer n="maxPrompterEmptyLines" v="1"/>
+	<Boolean n="keepStoryReplace" v="f"/>
+	<Boolean n="sendColors" v="f"/>
+	<Boolean n="sendCueInCueOut" v="f"/>
+	<Boolean n="sendScriptTags" v="f"/>
+	<String n="controllsOnAirStatusTargets"></String>
+	<Boolean n="rundownStopStatusDeletesFromAllDevices" v="f"/>
+	<Boolean n="acceptNotReadyShowStatus" v="f"/>
+	<Boolean n="acceptStatusTime" v="f"/>
+	<Boolean n="acceptStatusDur" v="f"/>
+	<Boolean n="acceptSlugElementChannel" v="f"/>
+	<Boolean n="isRedirectionTarget" v="f"/>
+	<Boolean n="translateRedirectedIds" v="f"/>
+	<Boolean n="supportsMosListAll" v="f"/>
+	<Boolean n="deleteLowresFiles" v="f"/>
+	<Boolean n="storyUnarchiveReplacesPrivateObjectsWithPublic" v="f"/>
+	<Enum n="mosObjectReadableId" v="octopus.utils.mos.MosObjXml$MosObjectReadableId.OBJ_ID"/>
+	<Integer n="mosObjSavingMergeInterval" v="0"/>
+	<Boolean n="allowMosObjCreate" v="f"/>
+	<Boolean n="useMosObjCreate" v="f"/>
+	<Boolean n="allowVideoEditor" v="f"/>
+	<Boolean n="defaultMosObjCreate" v="f"/>
+	<Boolean n="allowAutoMosObjCreate" v="f"/>
+	<Null n="mosObjCreateShortcutNumber"/>
+	<Null n="mosObjCreateDur"/>
+	<Null n="mosObjCreateIncLength"/>
+	<Null n="mosObjCreateIncValue"/>
+	<String n="mosObjCreateNamePattern"></String>
+	<Null n="mosObjCreateSendCreatedBy"/>
+	<String n="allowedObjTypes"></String>
+	<Boolean n="sendOctextTags" v="f"/>
+	<Boolean n="sendOctextTagsInEMD" v="f"/>
+	<Boolean n="updatePrivateObjects" v="t"/>
+	<Boolean n="preserveDeletedMosObjTags" v="f"/>
+	<Boolean n="useUTF8" v="t"/>
+	<Boolean n="omitMilliseconds" v="t"/>
+	<Boolean n="omitTimezone" v="f"/>
+	<Boolean n="logHeartbeats" v="f"/>
+	<Boolean n="sendHeartbeatsOnIncomingSockets" v="f"/>
+	<Boolean n="receiveNestedMsgs" v="f"/>
+	<Integer n="rundownLoggingInterval" v="240"/>
+	<Integer n="heartbeatInterval" v="0"/>
+	<Boolean n="useRoElementAction" v="t"/>
+	<Boolean n="useUTC" v="f"/>
+	<Boolean n="resendAllIfROChanges" v="f"/>
+	<Boolean n="sendSelectedScriptAlternative" v="f"/>
+	<Boolean n="activateFolders" v="t"/>
+	<Boolean n="markShowsReadyOnActivation" v="t"/>
+	<Boolean n="outIsInclusive" v="f"/>
+	<Boolean n="durIsInFrames" v="f"/>
+	<Boolean n="allowMosItemReplace" v="t"/>
+	<Boolean n="allowMosItemReplaceStart" v="f"/>
+	<Boolean n="allowMosItemReplaceDur" v="t"/>
+	<Boolean n="mosItemReplaceEMDTagMerge" v="f"/>
+	<Boolean n="pluginEMDMerge" v="t"/>
+	<Boolean n="refreshAllMosObjStories" v="f"/>
+	<Boolean n="defaultObjAir" v="f"/>
+	<Boolean n="countDurOfNotReadyObjs" v="f"/>
+	<Boolean n="countZeroDur" v="f"/>
+	<Boolean n="useInStoryObjAirReady" v="f"/>
+	<Boolean n="pluginObjectsArePrivate" v="t"/>
+	<Boolean n="passDomainToPlugins" v="f"/>
+	<Boolean n="allowElemBound" v="f"/>
+	<Long n="mosObjDeletionDelay" v="0"/>
+	<String n="sendExternalMetadata">STORY</String>
+	<String n="nonIndexedXPaths"></String>
+	<Null n="keyframePath"/>
+	<Null n="automaticKeyframePattern"/>
+	<Null n="automaticKeyframeWidth"/>
+	<Null n="automaticKeyframeHeight"/>
+	<Null n="lowresPath"/>
+	<Null n="automaticLowresPattern"/>
+	<String n="automaticLowresType">WMV</String>
+	<Null n="mobileLowresPath"/>
+	<Null n="automaticMobileLowresPattern"/>
+	<String n="RMLowresPatterns">RM</String>
+	<String n="QTLowresPatterns">QT</String>
+	<String n="WMVLowresPatterns">WM,MP4,MP3</String>
+	<String n="MPEGDASHLowresPatterns">MPD,DASH,MPEG-DASH</String>
+	<String n="MPEG1LowresPatterns">MPG,MPEG</String>
+	<String n="H264LowresPatterns">264</String>
+	<String n="JPGLowresPatterns">JPG,JPEG</String>
+	<String n="BMPLowresPatterns">BMP</String>
+	<Null n="lowresSignKeyPairId"/>
+	<Null n="lowresSignPrivateKey"/>
+	<Enum n="lowresExpiration" v="octopus.utils.mos.MosObjXml$Lowres$ExpirationMode.NONE"/>
+	<Null n="lowresMaxAge"/>
+	<Null n="hiresPath"/>
+	<String n="automaticHiresPattern"></String>
+	<Null n="missingThumbnailPath"/>
+	<Null n="cgPreviewType"/>
+	<String n="vizDataServerHost"></String>
+	<String n="vizDataServerUser"></String>
+	<String n="vizDataServerPassword"></String>
+	<String n="vizPreviewServerHost"></String>
+	<Boolean n="vizSaveObjects" v="f"/>
+	<Boolean n="vizUpdateSavedObjects" v="f"/>
+	<Boolean n="vizCreateObjectCopyOnReuse" v="t"/>
+	<Boolean n="vizSynchronizeAllTemplates" v="f"/>
+	<Boolean n="vizImportImageFields" v="t"/>
+	<Boolean n="vizImportRichTextFields" v="t"/>
+	<Null n="vizApiUrl"/>
+	<String n="vizOneServerHost"></String>
+	<String n="vizOneServerUser"></String>
+	<String n="vizOneServerPassword"></String>
+	<Boolean n="vizSearchEnabled" v="f"/>
+	<String n="vizSearchMandatoryFilter"><![CDATA[<Props/>]]></String>
+	<Boolean n="allMosObjsAreCG" v="t"/>
+	<Null n="cgDetectionScript"/>
+	<String n="evsRabbitHost"></String>
+	<Null n="evsRabbitPort"/>
+	<String n="evsRabbitVirtualHost"></String>
+	<String n="evsRabbitUsername"></String>
+	<String n="evsRabbitPassword"></String>
+	<String n="evsApiHostUrl"></String>
+	<String n="evsApiKey"></String>
+	<Null n="mosObjSaveScript"/>
+	<Null n="msgTransmitScript"/>
+	<Null n="guiScript"/>
+	<Null n="serverScript"/>
+	<Null n="boundMosObjFillScript"/>
+	<Date n="statusModified" v="1737558550010"/>
+	<Null n="extractedType"/>
+	<String n="extractedXPath"></String>
+	<Null n="secondaryIdXPath"/>
+	<Null n="storyContentMosObjDisplay"/>
+	<Enum n="commandCueInOutMode" v="octopus.server.entity.exchange.mos.MosDeviceRemote$CommandCueInOutMode.HIDDEN"/>
+	<Null n="mosartTemplatesObjGroup"/>
+	<Enum n="storyClipsMosObjectDisplay" v="octopus.server.entity.exchange.mos.MosDeviceRemote$StoryClipsMosObjectDisplay.OBJ_ID"/>
+	<Enum n="storyClipsStatusDisplay" v="octopus.server.entity.exchange.mos.MosDeviceRemote$StoryClipsStatusDisplay.NONE"/>
+	<Enum n="storyClipsChannelDisplay" v="octopus.server.entity.exchange.mos.MosDeviceRemote$StoryClipsChannelDisplay.NO_DEVICE"/>
+	<Boolean n="storyClipsMosObjectReadyDisplay" v="f"/>
+	<List n="addresses">
+		<Props n="elem" v="Props">
+			<Integer n="position" v="1"/>
+			<String n="rundownHost">10.10.10.82</String>
+			<Integer n="rundownPort" v="10541"/>
+			<String n="mediaHost">10.10.10.82</String>
+			<Integer n="mediaPort" v="10540"/>
+		</Props>
+	</List>
+	<List n="plugins">
+		<Props n="elem" v="Props">
+			<String n="shortName">Newsarts</String>
+			<String n="longName">Octopus-connect</String>
+			<Integer n="width" v="1000"/>
+			<Integer n="height" v="600"/>
+			<String n="type">EDITOR</String>
+			<String n="version">V2_8_Web</String>
+			<Enum n="platform" v="octopus.server.entity.exchange.mos.MosDeviceRemote$PluginPlatform.CEF"/>
+			<String n="implementation">http://10.10.10.82:3000/</String>
+			<Boolean n="showUse" v="t"/>
+			<Boolean n="showClose" v="t"/>
+			<Boolean n="isWindow" v="f"/>
+			<Boolean n="stretchWhenInline" v="t"/>
+			<Boolean n="separateThread" v="f"/>
+			<Boolean n="separateProcess" v="f"/>
+			<Boolean n="nativeWindow" v="f"/>
+			<Boolean n="reuseRunningPlugin" v="f"/>
+			<Boolean n="useNcsAppInfo" v="f"/>
+			<Boolean n="ncsAppInfoSendsItem" v="f"/>
+			<Boolean n="allowCreationInMedia" v="t"/>
+			<Boolean n="allowInReadOnlyScript" v="t"/>
+			<Null n="shortcutNumber"/>
+			<Boolean n="primaryEditor" v="t"/>
+			<Null n="separateProcessDir"/>
+			<Boolean n="closeWhenObjectArrives" v="f"/>
+			<Boolean n="saveOthersBelowFirst" v="f"/>
+			<String n="placement">MODELESS</String>
+		</Props>
+	</List>
+	<List n="statuses"/>
+	<List n="fieldSets"/>
+	<List n="mosObjCreateNameFilters"/>
+</Props>

@@ -158,6 +158,22 @@ class Cache {
         return this.stories[rundownStr][storyID].ord
     }
 
+    async getSortedStoriesIdArrByOrd(rundownSlug, index) {
+        if (!this.stories[rundownSlug]) return [];
+    
+        const stories = Object.values(this.stories[rundownSlug]);
+    
+        return stories
+            .filter(story => story.ord >= index)
+            .sort((a, b) => a.ord - b.ord)
+            .map(story => story.storyID); // Return only storyIDs
+    }
+
+    async getRundownLength(rundownSlug){
+        if (!this.stories[rundownSlug]) return 0;
+        return Object.keys(this.stories[rundownSlug]).length;
+    }
+
     async deleteStory(rundownStr, storyID) {
         if (this.stories[rundownStr] && this.stories[rundownStr][storyID]) {
             delete this.stories[rundownStr][storyID];

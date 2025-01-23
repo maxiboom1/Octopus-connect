@@ -2,6 +2,7 @@ import net from 'net';
 import appConfig from '../utilities/app-config.js';
 import parser from '../utilities/mos-parser.js';
 import mosCommands from '../utilities/mos-cmds.js';
+import logger from '../utilities/logger.js';
 
 class MosConnector {
     
@@ -23,7 +24,7 @@ class MosConnector {
             let buffer = Buffer.alloc(0); // Initialize an empty buffer for client data
     
             this.client.connect({ host: appConfig.octopusIpAddr, port: appConfig.rundownPort }, () => {
-                console.log(`MOS client connected to ${appConfig.rundownPort}`);
+                logger(`MOS client connected to ${appConfig.ncsID} at ${appConfig.octopusIpAddr}`);
                 resolve(); // Resolve when connected
             });
     
@@ -46,15 +47,15 @@ class MosConnector {
             });
     
             this.client.once('close', () => {
-                console.log('MOS client disconnected. Trying to reconnect...');
+                logHandler('MOS client disconnected. Trying to reconnect...');
                 this.client.destroy(); // Ensure socket is fully closed
                 setTimeout(() => { this.startClient(); }, 5000); // Reconnect logic
             });
     
             this.client.once('error', (err) => {
-                console.log(`Client Error: ${err.message}`);
+                logHandler(`Client Error: ${err.message}`);
                 if (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') {
-                    console.log('Reconnecting due to network issue...');
+                    logHandler('Reconnecting due to network issue...');
                     this.client.destroy(); // Explicitly close the socket on error
                     setTimeout(() => { this.startClient(); }, 5000); // Attempt to reconnect after timeout
                 } else {
@@ -84,20 +85,20 @@ class MosConnector {
                 });
 
                 socket.on('close', () => {
-                    console.log('MOS Server closed');
+                    logHandler('MOS Server closed');
                     this.serverSocket = null;
                 });
 
                 socket.on('error', (err) => {
-                    console.log(`MOS Server error: ${err.message}`);
+                    logHandler(`MOS Server error: ${err.message}`);
                 });
             }).listen(appConfig.rundownPort, () => {
-                console.log(`Server started on ${appConfig.rundownPort}`);
+                logHandler(`Server started on ${appConfig.rundownPort}`);
                 resolve(); // Resolve when the server starts
             });
 
             this.server.on('error', (err) => {
-                console.log(`Server Error: ${err.message}`);
+                logHandler(`Server Error: ${err.message}`);
                 reject(err); // Reject if there's an error starting the server
             });
         });
@@ -128,6 +129,12 @@ class MosConnector {
             console.error('Error sending data to client:', error);
         }
     }
+}
+
+const debugMode = appConfig.debugMode;
+
+function logHandler(message){
+    //if(debugMode) logger(`Mos-connector: ` + message);
 }
 
 const mosConnector = new MosConnector();

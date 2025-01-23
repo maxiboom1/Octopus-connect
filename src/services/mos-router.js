@@ -5,20 +5,20 @@ import appConfig from "../utilities/app-config.js";
 import appProcessor from "./app-processor.js";
 import findRoID from "../utilities/findRoID.js";
 
-const debugMode = appConfig.debugMode;
 
 async function mosRouter(msg, port) {
     // double !! converts expression to boolean - so, 
     // if msg.mos.heartbeat exists - the !! convert it to "true"
     switch (true) {
         case !!msg.mos.listMachInfo:
-            logHandler("Octopus is Alive! \nNCS Machine Info: " + JSON.stringify(msg.mos.listMachInfo,null,2));
+            //logHandler("Octopus is Alive! \nNCS Machine Info: " + JSON.stringify(msg.mos.listMachInfo,null,2));
             break;
         case !!msg.mos.heartbeat:
             ackService.sendHeartbeat(port);
             break;
         case !!msg.mos.roMetadataReplace:
             await appProcessor.roMetadataReplace(msg);
+            ackService.sendAck(msg.mos.roMetadataReplace.roID);
             break;         
               
         case msg.mos.roListAll !== undefined:
@@ -81,7 +81,10 @@ async function mosRouter(msg, port) {
     }
 }
 
+const debugMode = appConfig.debugMode;
+
 function logHandler(message){
-    if(debugMode) logger(`Mos-router service: ` + message);
+    if(debugMode) logger(`Mos-router service: ` + message); 
 }
+
 export default mosRouter;

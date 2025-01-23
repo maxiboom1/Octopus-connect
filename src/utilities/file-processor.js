@@ -31,11 +31,10 @@ async function processAndWriteFiles(templates) {
         const filePath = path.join(templatesFolder, `${uid}.html`);
         await fsPromises.writeFile(filePath, injectedHtml, 'utf-8');
         delete template.source;
-        if (debugMode){
-            logger(`Loaded ${name} template12`);
-        }
     }
-
+    if (debugMode){
+        logger(`Loaded ${templates.length} HTML templates from SQL to plugin/templates`);
+    }
     return templates;
 }
 

@@ -21,7 +21,6 @@ app.use(express.static('plugin'));
 const port = 3000;
 app.listen(port, () => {
     const host = getServerIP();
-    logger(`Server service running on port ${port}`);
-    logger(`Plugin url: http://${host}:${port}/index.html`)
+    logger(`Server started. Plugin url: http://${host}:${port}/index.html`)
     appProcessor.initialize();
 });

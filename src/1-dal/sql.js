@@ -16,7 +16,7 @@ const config = {
 const poolPromise = new sql.ConnectionPool(config)
   .connect()
   .then((pool) => {
-    logger('Connected to SQL Server');
+    logger(`SQL Client connected to ${config.database} database`);
     return pool;
   })
   .catch((err) => {

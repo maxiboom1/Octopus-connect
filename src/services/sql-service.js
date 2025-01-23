@@ -4,7 +4,7 @@ import processAndWriteFiles from "../utilities/file-processor.js";
 import cache from "../1-dal/cache.js";
 import timeConvertors from "../utilities/time-convertors.js";
 import logger from "../utilities/logger.js";
-import itemsHash from "../1-dal/items-hashmap.js";
+
 
 class SqlService {
 
@@ -25,7 +25,7 @@ class SqlService {
         try {
             const sql = `DELETE FROM ngn_inews_stories`;
             await db.execute(sql);
-            logger(`ngn_inews_stories cleared....`);
+            logHandler(`ngn_inews_stories cleared....`);
         } catch (error) {
             console.error('Error deleting stories from SQL:', error);
             throw error;
@@ -68,12 +68,12 @@ class SqlService {
             if (selectResult.recordset.length > 0) {
                 // If record exists, update it
                 await db.execute(updateQuery, values);
-                logger(`Registering existing rundown to active watch: ${rundownStr}`);
+                logHandler(`Registering existing rundown to active watch: ${rundownStr}`);
                 return selectResult.recordset[0].uid; // Return existing UID
             } else {
                 // If record does not exist, insert a new one and return the new UID
                 const insertResult = await db.execute(insertQuery, values);
-                logger(`Registering new rundown to active watch: ${rundownStr}`);
+                logHandler(`Registering new rundown to active watch: ${rundownStr}`);
                 return insertResult.recordset[0].uid; // Return new UID
             }
         } catch (error) {
@@ -86,7 +86,7 @@ class SqlService {
             const sql = `SELECT uid, name,properties FROM ngn_productions WHERE enabled = 1`;
             const productions = await db.execute(sql);
             await cache.setProductions(productions);
-            logger(`Loaded productions from SQL`);
+            logHandler(`Loaded productions from SQL`);
         } catch (error) {
             console.error('Error loading productions from SQL:', error);
             throw error;
@@ -103,7 +103,7 @@ class SqlService {
             //{ uid, name, production , icon}
             const templatesWithoutHtml = await processAndWriteFiles(templates);
             await cache.setTemplates(templatesWithoutHtml);
-            logger(`Loaded templates from SQL`);
+            logHandler(`Loaded templates from SQL`);
         } catch (error) {
             console.error('Error loading templates from SQL:', error);
             throw error;
@@ -121,7 +121,7 @@ class SqlService {
                 const sql = "UPDATE ngn_inews_rundowns SET enabled=0 WHERE uid = @uid";
                 await db.execute(sql,values);
             }
-            logger(`Noticed ${unwatchedRundowns.length} unwatched rundowns in db.`);
+            logHandler(`Noticed ${unwatchedRundowns.length} unwatched rundowns in db.`);
         } catch (error) {
             console.error('Error deleting stories from SQL:', error);
             throw error;
@@ -153,7 +153,7 @@ class SqlService {
             const result = await db.execute(sqlQuery, values);
             const assertedStoryUid = result.recordset[0].uid;
             story.uid = assertedStoryUid;
-            logger(`Registering new story to ${story.rundownStr}: ${story.storySlug}`);
+            logHandler(`Registering new story to ${story.rundownStr}: ${story.storySlug}`);
             return assertedStoryUid;
         } catch (error) {
             console.error('Error executing query:', error); 
@@ -194,7 +194,7 @@ class SqlService {
         `;
         try {
             await db.execute(sqlQuery, values);
-            logger(`Reorder story in ${rundownStr}: ${storyName}`);
+            logHandler(`Reorder story in ${rundownStr}: ${storyName}`);
         } catch (error) {
             console.error('Error executing query:', error);
         }
@@ -205,13 +205,44 @@ class SqlService {
         const sqlQuery = `DELETE FROM ngn_inews_stories WHERE uid = @uid;`;
         try {
             await db.execute(sqlQuery, values);
-            logger(`Story ${uid} deleted from ${rundownStr}`);
+            logHandler(`Story ${uid} deleted from ${rundownStr}`);
     
         } catch (error) {
             console.error(`Error deleting ${uid} story:`, error);
         }
     }
 
+    async getStoryOrdByStoryID(storyID){
+        
+        console.log("getStoryOrdByStoryID-sql func", storyID);
+        const values = {storyID: storyID};
+        const sqlQuery = `SELECT ord FROM ngn_inews_stories WHERE storyID = @storyID;`;
+        try {
+            const result = await db.execute(sqlQuery, values);
+            return result.recordset[0].ord;
+        } catch (error) {
+            console.error(`Error fetching story ${storyID} order:`, error);
+        }
+    }
+
+    async modifyBbStoryOrdByStoryID(storyID, ord){
+        const values = {
+            storyID:storyID,
+            ord: ord,
+            ordupdate: timeConvertors.createTick(),
+        };
+        const sqlQuery = `
+            UPDATE ngn_inews_stories
+            SET ord = @ord, ordupdate = @ordupdate
+            WHERE storyID = @storyID;
+        `;
+        try {
+            await db.execute(sqlQuery, values);
+        } catch (error) {
+            console.error('Error update story order by storyID: ', error);
+        }
+    } 
+    
 // ********************* ITEMS FUNCTIONS ********************** //
 
     async updateItem(rundownStr, item) { // Item: {uid, rundown, story, ord}
@@ -233,9 +264,9 @@ class SqlService {
         try {
             const result =await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                //logger(`GFX item in ${rundownStr}, story ${item.story} updated`); 
+                //logHandler(`GFX item in ${rundownStr}, story ${item.story} updated`); 
             } else {
-                logger(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
+                logHandler(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
             }
 
         } catch (error) {
@@ -259,9 +290,9 @@ class SqlService {
         try {
             const result =await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                logger(`GFX item ${gfxItem} order changed`); 
+                logHandler(`GFX item ${gfxItem} order changed`); 
             } else {
-                logger(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
+                logHandler(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
             }
 
         } catch (error) {
@@ -274,7 +305,7 @@ class SqlService {
         const query = `DELETE FROM ngn_inews_items WHERE uid = ${uid}`;
         try {
             await db.execute(query);
-            logger(`Cleared GFX item ${uid} from SQL`);
+            logHandler(`Cleared GFX item ${uid} from SQL`);
             } catch (error) {
             console.error(`Error clearing item ${uid} from SQL:`, error);
             }
@@ -295,9 +326,9 @@ class SqlService {
         try {
             const result =await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                logger(`Item ${uid} has been disabled`); 
+                logHandler(`Item ${uid} has been disabled`); 
             } else {
-                logger(`WARNING! Item ${uid} doesn't exists in DB`);
+                logHandler(`WARNING! Item ${uid} doesn't exists in DB`);
             }
 
         } catch (error) {
@@ -321,9 +352,9 @@ class SqlService {
         try {
             const result = await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                logger(`Items in ${storyID} disabled`);
+                logHandler(`Items in ${storyID} disabled`);
             } else {
-                logger(`WARNING! No items of story ${storyID} found in DB`);
+                logHandler(`WARNING! No items of story ${storyID} found in DB`);
             }
 
         } catch (error) {
@@ -335,7 +366,7 @@ class SqlService {
         const query = `DELETE FROM ngn_inews_items WHERE story = ${uid}`;
         try {
             await db.execute(query);
-            logger(`Cleared story ${uid} items`);
+            logHandler(`Cleared story ${uid} items`);
             } catch (error) {
             console.error('Error clearing story items from SQL:', error);
             }
@@ -441,7 +472,7 @@ class SqlService {
         try {
             // Execute the update query with the provided values
             await db.execute(sqlQuery, values);
-            logger(`Item ${item.gfxItem} updated from the plugin`);
+            logHandler(`Item ${item.gfxItem} updated from the plugin`);
         } catch (error) {
             console.error('Error on updating GFX item:', error);
         }
@@ -545,7 +576,7 @@ class SqlService {
         `;
         try {
             await db.execute(updateQuery, values);
-            logger(`Rundown un-monitored: ${rundownStr}`);
+            logHandler(`Rundown un-monitored: ${rundownStr}`);
             } catch (error) {
             console.error('Error un-monitor rundown:', error);
             }
@@ -555,7 +586,7 @@ class SqlService {
         const query = `DELETE FROM ngn_inews_stories WHERE rundown = ${uid}`;
         try {
             await db.execute(query);
-            logger(`Cleared unmonitored stories`);
+            logHandler(`Cleared unmonitored stories`);
             } catch (error) {
             console.error('Error clearing un-monitored stories from SQL:', error);
             }
@@ -565,12 +596,18 @@ class SqlService {
         const query = `DELETE FROM ngn_inews_items WHERE rundown = ${uid}`;
         try {
             await db.execute(query);
-            logger(`Cleared unmonitored items`);
+            logHandler(`Cleared unmonitored items`);
             } catch (error) {
             console.error('Error clearing un-monitored items from SQL:', error);
             }
     }
 }    
+
+const sqlDebug = appConfig.sqlDebug;
+
+function logHandler(message){
+    if(sqlDebug){logger(`SQL service: ` + message);}  
+}
 
 const sqlService = new SqlService();
 
