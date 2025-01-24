@@ -8,6 +8,7 @@ class ItemsHashmap {
     }
     removeItem(uid) {
         this.items.delete(uid);
+        return;
     }
     isUsed(uid) {
         return this.items.has(uid);

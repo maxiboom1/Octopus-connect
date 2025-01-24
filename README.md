@@ -7,6 +7,11 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Application notes
 
+### V 1.1.1
+
+- Completely new storyReplace logic. The only thing that to handle is what happened when i copy item in same story. TODO - document the replace logic.
+- Completely new item-service - now the service has only one entry point - and internal helper functions. 
+
 ### V 1.1.0
 
 - Remove un-necessary logging.

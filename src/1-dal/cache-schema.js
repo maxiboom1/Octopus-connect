@@ -18,7 +18,8 @@ const storyCacheExample = {
                         "gfxItem": 60832,
                         "gfxTemplate": 90199,
                         "gfxProduction": 20013
-                    }
+                    },
+                    ord:0
                 }
             // Other Items
             ],  
@@ -78,4 +79,4 @@ const insertExample = {
         "_operation": "INSERT"
       }
     }
-  }
+}

@@ -21,10 +21,6 @@ class Cache {
         this.productions = {};
         for (let i = 0; i < productions.length; i++) {
             const {name, uid, properties} ={...productions[i]};
-            // This part takes production "properties" data, and simplifies it to needed obj:
-            // scenes: [{name: "Scene Name",folders: 
-            // [{name: "Folder Name",itemUids: 
-            //[ /* Array of item UIDs */ ]},color:color// ... more folders]},// ... more scenes]
             const decodedStr = decodeURIComponent(properties);
             
             const productionData = JSON.parse(decodedStr);
@@ -114,14 +110,6 @@ class Cache {
         };
     }
 
-    // Modifying story name && number 
-    async modifyStoryProps(story) {
-        if (this.stories[story.rundownStr] && this.stories[story.rundownStr][story.storyID]) {
-            this.stories[story.rundownStr][story.storyID].name = story.storySlug;
-            this.stories[story.rundownStr][story.storyID].number = story.storyNum;
-        }
-    }
-
     async modifyStoryOrd(rundownStr, storyID, ord) {
         if (this.stories[rundownStr] && this.stories[rundownStr][storyID]) {
             this.stories[rundownStr][storyID].ord = ord;
@@ -152,10 +140,6 @@ class Cache {
         const itemsIdArr = story.item.map(item => item.mosExternalMetadata.gfxItem);
         
         return itemsIdArr;
-    }
-
-    async getStoryOrd(rundownStr, storyID){
-        return this.stories[rundownStr][storyID].ord
     }
 
     async getSortedStoriesIdArrByOrd(rundownSlug, index) {
@@ -203,15 +187,6 @@ class Cache {
 
     async getRundownList(rundownStr){
         return this.rundownsList[rundownStr];
-    }
-
-    getRundownSlugByStoryID(storyID) {
-        for (const rundownSlug in this.stories) {
-            if (this.stories[rundownSlug][storyID]) {
-                return rundownSlug; // Return the rundownSlug if storyID is found
-            }
-        }
-        return null; 
     }
 
     getRundownSlugByRoID(roID) {

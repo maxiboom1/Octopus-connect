@@ -4,12 +4,12 @@ import ackService from "./ack-service.js";
 import logger from "../utilities/logger.js";
 import itemsService from "./items-service.js";
 import deleteManager from "../utilities/delete-manager.js";
-import sql from "../1-dal/sql.js";
+import itemsHash from "../1-dal/items-hashmap.js";
 
 // MOS 2.8.5
 class OctopusProcessor {
     
-    // Triggered from roList incoming mos message only on new rundown creation
+    // Triggered from roList incoming mos message, and from insert event
     async handleNewStory(story) {        
 
         // Add props to story
@@ -22,47 +22,64 @@ class OctopusProcessor {
         await cache.saveStory(story);
 
         // Save Items of the story to DB
-        await itemsService.registerStoryItems(story);
+        await itemsService.registerItems(story);
 
         // Update last updates to story and rundown
         await sqlService.rundownLastUpdate(story.rundownStr);
         
     }
 
-    // Story-modify event. Its overwrite the whole story and its items, on any change.
     async storyReplace(msg){
         
-        const roID = msg.mos.roElementAction.roID;
-        let story = msg.mos.roElementAction.element_source.story;
-        story.item = Array.isArray(story.item) ? story.item : [story.item]; // Normalize to array struct
-        story.rundownStr = cache.getRundownSlugByStoryID(story.storyID);
+        // Process story, add needed props and normalize items.
+        const {roID,rundownStr,story} = this.propsExtractor(msg);
+        story.rundownStr = rundownStr;
+        story.uid = await cache.getStoryUid(rundownStr, story.storyID);
+        await this.constructStory(story);
         const cachedStory = await cache.getStory(story.rundownStr, story.storyID);
-        story = await this.constructStory(story);
-
-        const event = await itemsService.analyzeEvent(cachedStory, story);
+        story.ord = cachedStory.ord;
         
-        // Done and checked
-        if(event.message === "story-change"){
-            logger(`Story ${cachedStory.name} metadata changed`);
+        if (cachedStory.name !== story.storySlug) {
             await sqlService.modifyDbStory(story);
-            await cache.modifyStoryProps(story);
-        }
-        if(event.message === "new-item"){
-            logger("Item create event");
-            await itemsService.addNewItem(cachedStory,story);
-        }
-        if(event.message === "remove-item"){
-            logger("Item remove event");
-            await itemsService.removeItem(cachedStory,story);
+            logger(`Story ${cachedStory.name} slug changed to ${story.storySlug}`);
+        } 
+        
+        if (cachedStory.number !== story.storyNum) { 
+            await sqlService.modifyDbStory(story);           
+            logger(`Story ${story.storySlug} number changed to ${story.storyNum}`);
+        } 
+        
+        // Extract gfxItems once to avoid duplication
+        const storyGfxItems = story.item.map(item => item.mosExternalMetadata.gfxItem);
+        const cachedStoryGfxItems = cachedStory.item.map(item => item.mosExternalMetadata.gfxItem);
+        
+        // Delete diff items
+        if(story.item.length < cachedStory.item.length){
+            const itemsToDelete = cachedStoryGfxItems.filter(gfxItem => !storyGfxItems.includes(gfxItem));
+            for (const item of itemsToDelete){
+                await deleteManager.deleteItem(item);
+                itemsHash.removeItem(item);
+                console.log(`Item ${item} disabled.`);
+            }
+
         }
 
+        // New item event
+        if (story.item.length > cachedStory.item.length) {
+            const itemsToAdd = storyGfxItems.filter(gfxItem => !cachedStoryGfxItems.includes(gfxItem));
+            await itemsService.registerItems(story, {itemsToAdd: itemsToAdd});
+        }  
+        
+        // overwrite cached story
+        await cache.saveStory(story)
+        
+        // Update last updates
         await sqlService.rundownLastUpdate(story.rundownStr);
         await sqlService.storyLastUpdate(story.uid);
         ackService.sendAck(roID);
     }
 
     async storyMove(msg) {
-        console.log("Move story START");
         const roID = msg.mos.roElementAction.roID; // roID
         const rundownStr = cache.getRundownSlugByRoID(roID); // rundownSlug
         const sourceStoryID = msg.mos.roElementAction.element_source.storyID; // Moved story
@@ -108,32 +125,28 @@ class OctopusProcessor {
 
         ackService.sendAck(roID);
 
-        console.log("Move story END");
     }
 
     async insertStory(msg) {
         
         const {roID,rundownStr,targetStoryID,story} = this.propsExtractor(msg);
-        console.log('targetStoryID',targetStoryID, 'source: ', story.storyID);
         
         // Missing target means the insert story is on last position
         if(targetStoryID === ""){
             const storiesLength = await cache.getRundownLength(rundownStr);            
-            story.ord = storiesLength === 0? 0: storiesLength + 1;
-
-            console.log(`CASE-0: storiesLength: ${storiesLength}, story.ord: ${story.ord}`);
-
+            story.ord = storiesLength === 0? 0: storiesLength;
+            console.log("CASE-1");
         } else {
             const targetOrd = await sqlService.getStoryOrdByStoryID(targetStoryID);
-            const storyIDsArr = await cache.getSortedStoriesIdArrByOrd(rundownStr, targetOrd);
-            
-            console.log(`CASE-1: targetOrd: ${targetOrd}, storyIDsArr ${storyIDsArr}`);
-            
+            const storyIDsArr = await cache.getSortedStoriesIdArrByOrd(rundownStr, targetOrd);            
+            console.log("CASE-2");
+
             for(let i = 0; i<storyIDsArr.length; i++){
                 const newStoryOrder = targetOrd + i + 1;
                 await cache.modifyStoryOrd(rundownStr, storyIDsArr[i], newStoryOrder);
                 await sqlService.modifyBbStoryOrdByStoryID(storyIDsArr[i], newStoryOrder);                 
             }
+
             story.ord = targetOrd;
         }
 
@@ -200,7 +213,7 @@ class OctopusProcessor {
         const roID = msg.mos.roElementAction.roID; 
         const rundownStr = cache.getRundownSlugByRoID(roID); 
         const targetStoryID = msg.mos.roElementAction.element_target.storyID;
-        const story = msg.mos.roElementAction.element_source.story; // Inserted story
+        const story = msg.mos.roElementAction.element_source.story; 
         return {roID,rundownStr,targetStoryID,story}
     }
 

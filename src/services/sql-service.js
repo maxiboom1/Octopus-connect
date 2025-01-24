@@ -264,11 +264,11 @@ class SqlService {
         try {
             const result =await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                //logHandler(`GFX item in ${rundownStr}, story ${item.story} updated`); 
+                logHandler(`GFX item in ${rundownStr}, story ${item.story} updated`); 
             } else {
                 logHandler(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
             }
-
+            return result.rowsAffected[0] > 0;
         } catch (error) {
             console.error('Error on storing GFX item:', error);
             return null;
