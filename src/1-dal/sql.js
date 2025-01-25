@@ -1,6 +1,6 @@
 import sql from "mssql";
-import appConfig from "../utilities/app-config.js";
-import logger from "../utilities/logger.js";
+import appConfig from "../3-utilities/app-config.js";
+import logger from "../3-utilities/logger.js";
 
 const config = {
   user: appConfig.sqlServerUser,

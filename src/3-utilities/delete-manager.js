@@ -1,6 +1,6 @@
-import cache from "../1-dal/cache.js";
-import itemsHash from "../1-dal/items-hashmap.js";
-import sqlService from "../services/sql-service.js";
+import cache from "../2-cache/cache.js";
+import itemsHash from "../2-cache/items-hashmap.js";
+import sqlService from "../4-services/sql-service.js";
 import logger from "./logger.js";
 
 

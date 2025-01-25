@@ -1,10 +1,10 @@
 import sqlService from "./sql-service.js";
-import cache from "../1-dal/cache.js";
+import cache from "../2-cache/cache.js";
 import ackService from "./ack-service.js";
-import logger from "../utilities/logger.js";
+import logger from "../3-utilities/logger.js";
 import itemsService from "./items-service.js";
-import deleteManager from "../utilities/delete-manager.js";
-import itemsHash from "../1-dal/items-hashmap.js";
+import deleteManager from "../3-utilities/delete-manager.js";
+import itemsHash from "../2-cache/items-hashmap.js";
 
 // MOS 2.8.5
 class OctopusProcessor {
@@ -30,13 +30,12 @@ class OctopusProcessor {
     }
 
     async storyReplace(msg){
-        
         // Process story, add needed props and normalize items.
         const {roID,rundownStr,story} = this.propsExtractor(msg);
         story.rundownStr = rundownStr;
         story.uid = await cache.getStoryUid(rundownStr, story.storyID);
         await this.constructStory(story);
-        const cachedStory = await cache.getStory(story.rundownStr, story.storyID);
+        const cachedStory = await cache.getStory(rundownStr, story.storyID);
         story.ord = cachedStory.ord;
         
         if (cachedStory.name !== story.storySlug) {
@@ -49,9 +48,18 @@ class OctopusProcessor {
             logger(`Story ${story.storySlug} number changed to ${story.storyNum}`);
         } 
         
-        // Extract gfxItems once to avoid duplication
+        // Get story and cached gfxItems arrays
         const storyGfxItems = story.item.map(item => item.mosExternalMetadata.gfxItem);
         const cachedStoryGfxItems = cachedStory.item.map(item => item.mosExternalMetadata.gfxItem);
+        
+        // New item event
+        if (story.item.length > cachedStory.item.length) {
+            
+            const itemsToAdd = storyGfxItems.filter(gfxItem => !cachedStoryGfxItems.includes(gfxItem));
+            console.log("itemsToAdd: ",itemsToAdd);
+            await itemsService.registerItems(story, {itemsToAdd: itemsToAdd});
+        
+        }  
         
         // Delete diff items
         if(story.item.length < cachedStory.item.length){
@@ -63,12 +71,6 @@ class OctopusProcessor {
             }
 
         }
-
-        // New item event
-        if (story.item.length > cachedStory.item.length) {
-            const itemsToAdd = storyGfxItems.filter(gfxItem => !cachedStoryGfxItems.includes(gfxItem));
-            await itemsService.registerItems(story, {itemsToAdd: itemsToAdd});
-        }  
         
         // overwrite cached story
         await cache.saveStory(story)
@@ -128,18 +130,16 @@ class OctopusProcessor {
     }
 
     async insertStory(msg) {
-        
+
         const {roID,rundownStr,targetStoryID,story} = this.propsExtractor(msg);
         
         // Missing target means the insert story is on last position
         if(targetStoryID === ""){
             const storiesLength = await cache.getRundownLength(rundownStr);            
             story.ord = storiesLength === 0? 0: storiesLength;
-            console.log("CASE-1");
         } else {
             const targetOrd = await sqlService.getStoryOrdByStoryID(targetStoryID);
             const storyIDsArr = await cache.getSortedStoriesIdArrByOrd(rundownStr, targetOrd);            
-            console.log("CASE-2");
 
             for(let i = 0; i<storyIDsArr.length; i++){
                 const newStoryOrder = targetOrd + i + 1;

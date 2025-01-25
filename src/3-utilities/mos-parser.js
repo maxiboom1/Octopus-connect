@@ -1,5 +1,5 @@
 import {XMLParser} from "fast-xml-parser";
-import mosRouter from "../services/mos-router.js";
+import mosRouter from "../4-services/mos-router.js";
 import appConfig from "./app-config.js";
 import logger from "./logger.js";
 

@@ -1,7 +1,7 @@
-import appConfig from "../utilities/app-config.js";
+import appConfig from "../3-utilities/app-config.js";
 import mosConnector from "../1-dal/mos-connector.js";
 import mosMediaConnector from "../1-dal/mos-media-connector.js";
-import timeConvertors from "../utilities/time-convertors.js";
+import timeConvertors from "../3-utilities/time-convertors.js";
 
 class AckService {
     

@@ -1,6 +1,6 @@
 import express from "express";
-import sqlService from "../services/sql-service.js";
-import cache from "../1-dal/cache.js";
+import sqlService from "../4-services/sql-service.js";
+import cache from "../2-cache/cache.js";
 
 const router = express.Router();
 

@@ -1,9 +1,9 @@
 import sqlService from "./sql-service.js";
 import mosConnector from "../1-dal/mos-connector.js";
-import mosCommands from "../utilities/mos-cmds.js";
-import itemsHash from "../1-dal/items-hashmap.js";
-import appConfig from "../utilities/app-config.js";
-import logger from "../utilities/logger.js";
+import mosCommands from "../3-utilities/mos-cmds.js";
+import itemsHash from "../2-cache/items-hashmap.js";
+import appConfig from "../3-utilities/app-config.js";
+import logger from "../3-utilities/logger.js";
 
 const { debugMode, debugFunctions } = appConfig;
 

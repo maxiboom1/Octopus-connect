@@ -1,9 +1,9 @@
-import appConfig from "../utilities/app-config.js";
+import appConfig from "../3-utilities/app-config.js";
 import db from "../1-dal/sql.js";
-import processAndWriteFiles from "../utilities/file-processor.js";
-import cache from "../1-dal/cache.js";
-import timeConvertors from "../utilities/time-convertors.js";
-import logger from "../utilities/logger.js";
+import processAndWriteFiles from "../3-utilities/file-processor.js";
+import cache from "../2-cache/cache.js";
+import timeConvertors from "../3-utilities/time-convertors.js";
+import logger from "../3-utilities/logger.js";
 
 
 class SqlService {
@@ -214,7 +214,6 @@ class SqlService {
 
     async getStoryOrdByStoryID(storyID){
         
-        console.log("getStoryOrdByStoryID-sql func", storyID);
         const values = {storyID: storyID};
         const sqlQuery = `SELECT ord FROM ngn_inews_stories WHERE storyID = @storyID;`;
         try {

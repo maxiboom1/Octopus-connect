@@ -1,11 +1,11 @@
 import mosConnector from "../1-dal/mos-connector.js";
 import mosMediaConnector from "../1-dal/mos-media-connector.js";
 import sqlService from "./sql-service.js";
-import cache from "../1-dal/cache.js";
+import cache from "../2-cache/cache.js";
 import ackService from "./ack-service.js";
-import logger from "../utilities/logger.js";
-import mosCommands from "../utilities/mos-cmds.js";
-import appConfig from "../utilities/app-config.js";
+import logger from "../3-utilities/logger.js";
+import mosCommands from "../3-utilities/mos-cmds.js";
+import appConfig from "../3-utilities/app-config.js";
 import octopusService from "./octopus-service.js";
 
 // MOS 2.8.5
@@ -66,6 +66,7 @@ class AppProcessor {
             story.rundownStr = roSlug; //Add rundownStr to story
             story.ord = ord; //Add ord to story
             await octopusService.handleNewStory(story);
+            
             ord++;
         }
         logger(`Loaded rundown ${roSlug}`);

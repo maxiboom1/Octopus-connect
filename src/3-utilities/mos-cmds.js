@@ -60,7 +60,7 @@ class MosCommands {
                                 <gfxItem>${newUid}</gfxItem>
                                 <gfxTemplate>${el.mosExternalMetadata.gfxTemplate}</gfxTemplate>
                                 <gfxProduction>${el.mosExternalMetadata.gfxProduction}</gfxProduction>
-                                <register>Registered</register>
+                                <modified>Controller</modified>
                             </mosExternalMetadata>
                         </item>
                 </mosItemReplace>

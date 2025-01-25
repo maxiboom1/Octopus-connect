@@ -7,6 +7,11 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Application notes
 
+### V 1.1.2
+
+- Project folders rebuild - separate folder for cache modules, separate model files for mos messages, and for cache data structs.
+- Numbering folders in hierarchy from low data layers to high business logic.
+
 ### V 1.1.1
 
 - Completely new storyReplace logic. The only thing that to handle is what happened when i copy item in same story. TODO - document the replace logic.

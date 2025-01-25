@@ -1,10 +1,10 @@
 import express from "express";
 import cors from "cors";
-import getServerIP from "./src/utilities/host-ip.js";
+import getServerIP from "./src/3-utilities/host-ip.js";
 import bodyParser from 'body-parser';
-import logger from "./src/utilities/logger.js";
-import routes from "./src/routes/routes.js";
-import appProcessor from "./src/services/app-processor.js";
+import logger from "./src/3-utilities/logger.js";
+import routes from "./src/5-routes/routes.js";
+import appProcessor from "./src/4-services/app-processor.js";
 const app = express(); 
 
 app.use(cors({origin: '*'}));

@@ -1,4 +1,4 @@
-import replaceAndNormalizeSpaces from "../utilities/normalize.js";
+import replaceAndNormalizeSpaces from "../3-utilities/normalize.js";
 
 class Cache {
     
