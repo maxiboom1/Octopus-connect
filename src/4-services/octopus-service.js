@@ -38,39 +38,40 @@ class OctopusProcessor {
         const cachedStory = await cache.getStory(rundownStr, story.storyID);
         story.ord = cachedStory.ord;
         
-        if (cachedStory.name !== story.storySlug) {
+        // Determine event type and handle it
+        if (cachedStory.name !== story.storySlug) { // Item slug change event
             await sqlService.modifyDbStory(story);
             logger(`Story ${cachedStory.name} slug changed to ${story.storySlug}`);
-        } 
         
-        if (cachedStory.number !== story.storyNum) { 
+        } else if (cachedStory.number !== story.storyNum) {  // Item Num change event     
             await sqlService.modifyDbStory(story);           
             logger(`Story ${story.storySlug} number changed to ${story.storyNum}`);
-        } 
         
-        // Get story and cached gfxItems arrays
-        const storyGfxItems = story.item.map(item => item.mosExternalMetadata.gfxItem);
-        const cachedStoryGfxItems = cachedStory.item.map(item => item.mosExternalMetadata.gfxItem);
+        } else if (story.item.length > cachedStory.item.length) { // New item event
+            const storyItemIds = story.item.map(item => item.itemID);
+            const cachedItemIds = cachedStory.item.map(item => item.itemID);
+            const itemIdToAdd = storyItemIds.filter(ID => !cachedItemIds.includes(ID));
+            await itemsService.registerItems(story, {itemIDArr: itemIdToAdd, replaceEvent:true});
         
-        // New item event
-        if (story.item.length > cachedStory.item.length) {
-            
-            const itemsToAdd = storyGfxItems.filter(gfxItem => !cachedStoryGfxItems.includes(gfxItem));
-            console.log("itemsToAdd: ",itemsToAdd);
-            await itemsService.registerItems(story, {itemsToAdd: itemsToAdd});
-        
-        }  
-        
-        // Delete diff items
-        if(story.item.length < cachedStory.item.length){
+        } else if(story.item.length < cachedStory.item.length){ // Item delete event
+            const storyGfxItems = story.item.map(item => item.mosExternalMetadata.gfxItem);
+            const cachedStoryGfxItems = cachedStory.item.map(item => item.mosExternalMetadata.gfxItem);
             const itemsToDelete = cachedStoryGfxItems.filter(gfxItem => !storyGfxItems.includes(gfxItem));
+            
             for (const item of itemsToDelete){
                 await deleteManager.deleteItem(item);
                 itemsHash.removeItem(item);
                 console.log(`Item ${item} disabled.`);
             }
 
-        }
+        } else { // Reorder item check (fallback case)
+    
+            logger(`Syncing items order in ${story.storySlug}`);
+            for(const item of story.item){
+                await sqlService.updateItemOrd(rundownStr, item.mosExternalMetadata.gfxItem, item.ord);
+            }
+            
+        }  
         
         // overwrite cached story
         await cache.saveStory(story)

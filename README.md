@@ -7,6 +7,11 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Application notes
 
+### V 1.1.3
+
+- Modified and checked story REPLACE function - it has complex logic and handle different events within story: New Item, Removed Item, story num/slug change, if not of those is triggered, then we sync items order. The most complex part there is the New item event - since it handles case that user may copy the same item within same story - as a result we get 2 items with same gfxItem id. In tan case we compare the diff by itemID, which is uniq.
+- Adapted registerItems function to the replace function changes.
+
 ### V 1.1.2
 
 - Project folders rebuild - separate folder for cache modules, separate model files for mos messages, and for cache data structs.

@@ -5,19 +5,28 @@ import itemsHash from "../2-cache/items-hashmap.js";
 import appConfig from "../3-utilities/app-config.js";
 import logger from "../3-utilities/logger.js";
 
-const { debugMode, debugFunctions } = appConfig;
-
-async function registerItems(story, options = { itemsToAdd: [] }) {
-
-    const { rundown, uid: storyUid } = story;
+async function registerItems(story, options = { itemIDArr: [], replaceEvent:false }) {
+    const { rundown, uid: storyUid, rundownStr } = story;
     let ord = 0;
 
     for (const el of story.item) {
-        const { gfxItem } = el.mosExternalMetadata;
+        
+        const {gfxItem} = el.mosExternalMetadata;
+        const itemID = el.itemID;
+        
+        // If its from replaceEvent, process only items in the list
+        if (options.replaceEvent) {
+            const indexInAdd = options.itemIDArr.indexOf(itemID);
 
-        if (options.itemsToAdd.length > 0 && !options.itemsToAdd.includes(gfxItem)) {
-            ord++;
-            continue;
+            if (indexInAdd === -1) {
+                await sqlService.updateItemOrd(rundownStr, gfxItem, ord);
+                ord++;
+                continue; // Skip if not in itemIDArr
+            }
+
+            // Remove the itemID from itemIDArr after processing,  to handle case when
+            // user copy same item in same story (we get then 2 items with same gfxItem)
+            options.itemIDArr.splice(indexInAdd, 1);
         }
 
         const item = constructItem(gfxItem, rundown, storyUid, ord);
@@ -25,9 +34,9 @@ async function registerItems(story, options = { itemsToAdd: [] }) {
         if (itemsHash.isUsed(item.uid)) {
             await handleDuplicateItem(item, story, el, ord);
         } else {
-            await createNewItem(item, story.rundownStr);
+            await createNewItem(item, story.rundownStr, el.itemSlug);
         }
-
+        
         ord++;
     }
 }
@@ -54,12 +63,12 @@ async function handleDuplicateItem(item, story, el, ord) {
     logHandler(`Saving duplicate item ${assertedUid}, and send mosItemReplace to NRCS`);
 }
 
-async function createNewItem(item, rundownStr) {
+async function createNewItem(item, rundownStr,itemSlug) {
     const result = await sqlService.updateItem(rundownStr, item);
 
     if (result) {
         itemsHash.registerItem(item.uid);
-        logHandler(`New Item ${item.uid} created`);
+        logHandler(`New Item ${itemSlug} created in ${rundownStr}`);
     } else {
         logHandler(`OPPPS.. Item ${item.uid} doesn't exists in SQL`);
     }
@@ -69,6 +78,7 @@ function constructItem(gfxItem, rundown, storyUid, ord) {
     return { uid: gfxItem, rundown, story: storyUid, ord };
 }
 
+const debugMode = appConfig;
 function logHandler(message) {
     if (debugMode) logger(`Items service: ` + message);
 }
