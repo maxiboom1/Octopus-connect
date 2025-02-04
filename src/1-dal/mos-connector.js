@@ -24,7 +24,7 @@ class MosConnector {
             let buffer = Buffer.alloc(0); // Initialize an empty buffer for client data
     
             this.client.connect({ host: appConfig.octopusIpAddr, port: appConfig.rundownPort }, () => {
-                logger(`MOS client connected to ${appConfig.ncsID} at ${appConfig.octopusIpAddr}`);
+                logger(`[TCP] MOS client connected to ${appConfig.ncsID} at ${appConfig.octopusIpAddr}`);
                 resolve(); // Resolve when connected
             });
     
@@ -47,15 +47,15 @@ class MosConnector {
             });
     
             this.client.once('close', () => {
-                logHandler('MOS client disconnected. Trying to reconnect...');
+                logger('[TCP] MOS client disconnected. Trying to reconnect...',"red");
                 this.client.destroy(); // Ensure socket is fully closed
                 setTimeout(() => { this.startClient(); }, 5000); // Reconnect logic
             });
     
             this.client.once('error', (err) => {
-                logHandler(`Client Error: ${err.message}`);
+                logger(`[TCP] Client Error: ${err.message}`, "red");
                 if (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') {
-                    logHandler('Reconnecting due to network issue...');
+                    logger('[TCP] Reconnecting due to network issue...');
                     this.client.destroy(); // Explicitly close the socket on error
                     setTimeout(() => { this.startClient(); }, 5000); // Attempt to reconnect after timeout
                 } else {
@@ -85,20 +85,20 @@ class MosConnector {
                 });
 
                 socket.on('close', () => {
-                    logHandler('MOS Server closed');
+                    logger('[TCP] MOS Server closed', "red");
                     this.serverSocket = null;
                 });
 
                 socket.on('error', (err) => {
-                    logHandler(`MOS Server error: ${err.message}`);
+                    logger(`[TCP] MOS Server error: ${err.message}`,"red");
                 });
             }).listen(appConfig.rundownPort, () => {
-                logHandler(`Server started on ${appConfig.rundownPort}`);
+                logger(`[TCP] Server started on ${appConfig.rundownPort}`);
                 resolve(); // Resolve when the server starts
             });
 
             this.server.on('error', (err) => {
-                logHandler(`Server Error: ${err.message}`);
+                logger(`[TCP] Server Error: ${err.message}`,"red");
                 reject(err); // Reject if there's an error starting the server
             });
         });
@@ -129,12 +129,6 @@ class MosConnector {
             console.error('Error sending data to client:', error);
         }
     }
-}
-
-const debugMode = appConfig.debugMode;
-
-function logHandler(message){
-    //if(debugMode) logger(`Mos-connector: ` + message);
 }
 
 const mosConnector = new MosConnector();

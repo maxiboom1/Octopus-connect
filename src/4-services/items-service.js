@@ -2,7 +2,6 @@ import sqlService from "./sql-service.js";
 import mosConnector from "../1-dal/mos-connector.js";
 import mosCommands from "../3-utilities/mos-cmds.js";
 import itemsHash from "../2-cache/items-hashmap.js";
-import appConfig from "../3-utilities/app-config.js";
 import logger from "../3-utilities/logger.js";
 
 async function registerItems(story, options = { itemIDArr: [], replaceEvent:false }) {
@@ -60,7 +59,7 @@ async function handleDuplicateItem(item, story, el, ord) {
     itemsHash.registerItem(assertedUid);
 
     mosConnector.sendToClient(mosCommands.mosItemReplace(story, el, assertedUid));
-    logHandler(`Saving duplicate item ${assertedUid}, and send mosItemReplace to NRCS`);
+    logger(`[ITEM] Saving duplicate item {${assertedUid}}, and send mosItemReplace to NRCS`);
 }
 
 async function createNewItem(item, rundownStr,itemSlug) {
@@ -68,19 +67,14 @@ async function createNewItem(item, rundownStr,itemSlug) {
 
     if (result) {
         itemsHash.registerItem(item.uid);
-        logHandler(`New Item ${itemSlug} created in ${rundownStr}`);
+        logger(`[ITEM] New Item {${itemSlug}} created in {${rundownStr}}`);
     } else {
-        logHandler(`OPPPS.. Item ${item.uid} doesn't exists in SQL`);
+        logger(`[ITEM] OPPPS.. Item ${item.uid} doesn't exists in SQL`, "red");
     }
 }
 
 function constructItem(gfxItem, rundown, storyUid, ord) {
     return { uid: gfxItem, rundown, story: storyUid, ord };
-}
-
-const debugMode = appConfig;
-function logHandler(message) {
-    if (debugMode) logger(`Items service: ` + message);
 }
 
 export default { registerItems };

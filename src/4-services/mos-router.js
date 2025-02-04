@@ -1,7 +1,6 @@
 import ackService from "./ack-service.js";
 import logger from "../3-utilities/logger.js";
 import octopusService from "./octopus-service.js";
-import appConfig from "../3-utilities/app-config.js";
 import appProcessor from "./app-processor.js";
 import findRoID from "../3-utilities/findRoID.js";
 
@@ -11,7 +10,7 @@ async function mosRouter(msg, port) {
     // if msg.mos.heartbeat exists - the !! convert it to "true"
     switch (true) {
         case !!msg.mos.listMachInfo:
-            //logHandler("Octopus is Alive! \nNCS Machine Info: " + JSON.stringify(msg.mos.listMachInfo,null,2));
+            //logger("Octopus is Alive! \nNCS Machine Info: " + JSON.stringify(msg.mos.listMachInfo,null,2));
             break;
         case !!msg.mos.heartbeat:
             ackService.sendHeartbeat(port);
@@ -22,26 +21,28 @@ async function mosRouter(msg, port) {
             break;         
               
         case msg.mos.roListAll !== undefined:
-            logHandler(port + " received roListAll");
+            logger(`[MOS] {${color("roListAll")}} are received from ${port}`);
             await appProcessor.roListAll(msg)
             break;
         case !!msg.mos.roList:
-            logHandler(port + " received roList");
+            logger(`[MOS] {${color("roList")}} are received from ${port}`);
             await appProcessor.roList(msg)
             break;
         case !!msg.mos.roCreate:
+            logger(`[MOS] {${color("roCreate")}} are received from ${port}`);
             await appProcessor.roCreate(msg);
             break;
         case !!msg.mos.roReadyToAir:
-            logHandler(port+ " readyToAir");
+            logger(`[MOS] {${color("roReadyToAir")}} are received from ${port}`);
             ackService.sendAck(msg.mos.roReadyToAir.roID);
             break;
         case !!msg.mos.roStorySend:
-            logHandler(port+ " storySend: " + JSON.stringify(msg));
+            logger(`[MOS] {${color("roStorySend")}} are received from ${port}`);
             ackService.sendAck(msg.mos.roStorySend.roID);
             break;
         
         case !!msg.mos.roDelete:
+            logger(`[MOS] {${color("roDelete")}} are received from ${port}`);
             await appProcessor.roDelete(msg);
             break; 
 
@@ -50,24 +51,24 @@ async function mosRouter(msg, port) {
             const action = msg.mos.roElementAction["@_operation"];
 
             if(action === "MOVE"){
-                logHandler(`roElementAction ==> MOVE`);
+                logger(`[MOS] {${color("roElementAction@MOVE")}} are received from ${port}`);
                 await octopusService.storyMove(msg);
             } 
             else if(action === "REPLACE"){
-                logHandler(`roElementAction ==> REPLACE`);
+                logger(`[MOS] {${color("roElementAction@REPLACE")}} are received from ${port}`);                
                 await octopusService.storyReplace(msg);
             } 
             else if(action === "INSERT"){
-                logHandler(`roElementAction ==> INSERT`);
+                logger(`[MOS] {${color("roElementAction@INSERT")}} are received from ${port}`);
                 await octopusService.insertStory(msg);
             } 
             else if(action === "DELETE"){
-                logHandler(`roElementAction ==> DELETE`);
+                logger(`[MOS] {${color("roElementAction@DELETE")}} are received from ${port}`);
                 await octopusService.deleteStory(msg);
             } 
             
             else {
-                logHandler(`Unknown roElementAction action: ${msg.mos}`);
+                logger(`[MOS] {${color("roElementAction@[!UNKNOWN!]")}} are received from ${port}`,"red");
                 ackService.sendAck(msg.mos.roElementAction.roID);
             }
 
@@ -75,16 +76,16 @@ async function mosRouter(msg, port) {
             break;      
 
         default:
-            logHandler(`Unknown MOS message: ${JSON.stringify(msg)}`);
+            logger(`[MOS] Unknown MOS message: ${JSON.stringify(msg)}`,"red");
             const roID = findRoID(msg);
             if(roID){ackService.sendAck(roID);}
     }
 }
 
-const debugMode = appConfig.debugMode;
-
-function logHandler(message){
-    if(debugMode) logger(`Mos-router service: ` + message); 
-}
+function color(msg) { // Used to set color to MOS events in console
+    const color = "\x1b[33m"
+    const reset = "\x1b[0m"
+    return color + msg + reset;
+};
 
 export default mosRouter;

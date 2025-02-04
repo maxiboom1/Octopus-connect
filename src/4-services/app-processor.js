@@ -7,6 +7,7 @@ import logger from "../3-utilities/logger.js";
 import mosCommands from "../3-utilities/mos-cmds.js";
 import appConfig from "../3-utilities/app-config.js";
 import octopusService from "./octopus-service.js";
+import logMessages from "../3-utilities/logger-messages.js";
 
 // MOS 2.8.5
 class AppProcessor {
@@ -16,17 +17,16 @@ class AppProcessor {
     }
     
     async initialize() {
-        logger(`Starting Octopus-Connect App ${appConfig.version}`);
+        logMessages.appLoadedMessage();
         await sqlService.initialize();
         await mosConnector.connect();
         await mosMediaConnector.connect();
-        //mosConnector.sendToClient(mosCommands.reqMachInfo());
         mosConnector.sendToClient(mosCommands.roReqAll());// Start point - sends roReqAll and server receives roListAll
     }
     
     async roListAll(msg) {
         if (msg.mos.roListAll === ""){
-            logger("NCS doesn't have active rundowns.",true);
+            logger("[RUNDOWN] NCS doesn't have active rundowns.","red");
             return;
         }
         const roArr = [].concat(msg.mos.roListAll.ro); // Normalize ro data
@@ -69,7 +69,7 @@ class AppProcessor {
             
             ord++;
         }
-        logger(`Loaded rundown ${roSlug}`);
+        logger(`[RUNDOWN] Loaded rundown {${roSlug}}`);
 
         // Mark the current request as complete and process the next roReq
         this.pendingRequest = false;
@@ -87,7 +87,7 @@ class AppProcessor {
         
         //Send ack to NCS
         ackService.sendAck(msg.mos.roCreate.roID);
-        logger(`roCreate: New rundown registered  - ${rundownStr}` );
+        logger(`[RUNDOWN] New rundown registered  - {${rundownStr}}` );
         
         // Send roReq request
         mosConnector.sendToClient(mosCommands.roReq(roID)); 
@@ -106,7 +106,7 @@ class AppProcessor {
         
         //Send ack to NCS
         ackService.sendAck(msg.mos.roDelete.roID);
-        logger(`roDelete: ${rundownStr} was completely cleared from anywhere!` );
+        logger(`[RUNDOWN] {${rundownStr}} was deleted from anywhere!` );
         
     }
 
@@ -118,7 +118,7 @@ class AppProcessor {
             const newRundownStr = msg.mos.roMetadataReplace.roSlug;
             await sqlService.modifyRundownStr(uid, newRundownStr);
             await cache.modifyRundownStr(rundownStr, newRundownStr);
-            logger(`RoMetadaReplace: Rundown name changed to ${newRundownStr}`);
+            logger(`[RUNDOWN] Rundown name changed to {${newRundownStr}}`);
         }
     }
     

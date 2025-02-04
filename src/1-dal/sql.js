@@ -16,11 +16,11 @@ const config = {
 const poolPromise = new sql.ConnectionPool(config)
   .connect()
   .then((pool) => {
-    logger(`SQL Client connected to ${config.database} database`);
+    logger(`[SYSTEM] SQL Client connected to ${config.database} database`);
     return pool;
   })
   .catch((err) => {
-    console.error('Error connecting to SQL Server:', err);
+    logger(`[SYSTEM] Error connecting to SQL Server: ${err}`, "red");
     throw err;
   });
 
@@ -49,7 +49,7 @@ async function execute(sql, values) {
       return result.recordset;
     }
   } catch (err) {
-    console.error('Error executing query:', err);
+    logger(`Error executing query: ${err}`, "red");
     throw err;
   }
 }

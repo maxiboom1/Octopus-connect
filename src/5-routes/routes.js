@@ -4,27 +4,27 @@ import cache from "../2-cache/cache.js";
 
 const router = express.Router();
 
-// Get http://serverAddr:4001/api/productions
+// Get http://serverAddr:3000/api/productions
 router.get('/productions', async (req, res) => {
   const productions = await cache.getProductionsArr();
   res.json(productions);
 });
 
-// Get http://serverAddr:4001/api/templates
+// Get http://serverAddr:3000/api/templates
 router.get('/templates/:uid', async (req, res) => {
   const productionUid = req.params.uid;
   const templates = await cache.getTemplatesByProduction(productionUid);
   res.json(templates);
 });
 
-// Get http://serverAddr:4001/api/get-item-data
+// Get http://serverAddr:3000/api/get-item-data
 router.get('/get-item-data/:uid', async (req, res) => {
   const itemUid = req.params.uid;
   const itemData = await sqlService.getItemData(itemUid);
   res.json(itemData);
 });
 
-// Post http://serverAddr:4001/api/set-item
+// Post http://serverAddr:3000/api/set-item
 router.post('/set-item', async (req, res) => {
   try {
       const item = req.body;
@@ -36,7 +36,7 @@ router.post('/set-item', async (req, res) => {
   }
 });
 
-// Post http://serverAddr:4001/api/update-item
+// Post http://serverAddr:3000/api/update-item
 router.post('/update-item', async (req, res) => {
   try {
       const item = req.body;
@@ -49,30 +49,27 @@ router.post('/update-item', async (req, res) => {
 });
 
 
-
-
-
 // ****************** FOR DEBUG ******************
 
-// Get http://serverAddr:4001/api/getdata
+// Get http://serverAddr:3000/api/getdata
 router.get('/getrundowns', async (req, res) => {
   const data = await cache.getRundowns();
   res.json(data);
 });
 
-// Get http://serverAddr:4001/api/getstories
+// Get http://serverAddr:3000/api/getstories
 router.get('/getstories', async (req, res) => {
   const data = await cache.getStories();
   res.json(data);
 });
 
-// Get http://serverAddr:4001/api/getstories
+// Get http://serverAddr:3000/api/getstories
 router.get('/debug', async (req, res) => {
     const data = await cache.getStories();
     res.json(data);
   });
 
-// Get http://serverAddr:4001/api/getdata
+// Get http://serverAddr:3000/api/getdata
 router.get('/debug/:data', async (req, res) => {
   const data = req.params.data;
   console.log(data);

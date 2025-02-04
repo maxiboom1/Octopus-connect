@@ -25,7 +25,7 @@ class SqlService {
         try {
             const sql = `DELETE FROM ngn_inews_stories`;
             await db.execute(sql);
-            logHandler(`ngn_inews_stories cleared....`);
+            logger(`[SQL] ngn_inews_stories cleared....`);
         } catch (error) {
             console.error('Error deleting stories from SQL:', error);
             throw error;
@@ -68,12 +68,12 @@ class SqlService {
             if (selectResult.recordset.length > 0) {
                 // If record exists, update it
                 await db.execute(updateQuery, values);
-                logHandler(`Registering existing rundown to active watch: ${rundownStr}`);
+                logger(`[SQL] Registering existing rundown to active watch: {${rundownStr}}`);
                 return selectResult.recordset[0].uid; // Return existing UID
             } else {
                 // If record does not exist, insert a new one and return the new UID
                 const insertResult = await db.execute(insertQuery, values);
-                logHandler(`Registering new rundown to active watch: ${rundownStr}`);
+                logger(`[SQL] Registering new rundown to active watch: {${rundownStr}}`);
                 return insertResult.recordset[0].uid; // Return new UID
             }
         } catch (error) {
@@ -86,7 +86,7 @@ class SqlService {
             const sql = `SELECT uid, name,properties FROM ngn_productions WHERE enabled = 1`;
             const productions = await db.execute(sql);
             await cache.setProductions(productions);
-            logHandler(`Loaded productions from SQL`);
+            logger(`[SQL] Loaded productions from SQL`);
         } catch (error) {
             console.error('Error loading productions from SQL:', error);
             throw error;
@@ -103,7 +103,7 @@ class SqlService {
             //{ uid, name, production , icon}
             const templatesWithoutHtml = await processAndWriteFiles(templates);
             await cache.setTemplates(templatesWithoutHtml);
-            logHandler(`Loaded templates from SQL`);
+            logger(`[SQL] Loaded templates from SQL`);
         } catch (error) {
             console.error('Error loading templates from SQL:', error);
             throw error;
@@ -121,7 +121,7 @@ class SqlService {
                 const sql = "UPDATE ngn_inews_rundowns SET enabled=0 WHERE uid = @uid";
                 await db.execute(sql,values);
             }
-            logHandler(`Noticed ${unwatchedRundowns.length} unwatched rundowns in db.`);
+            logger(`[SQL] Noticed {${unwatchedRundowns.length}} unwatched rundowns in db.`);
         } catch (error) {
             console.error('Error deleting stories from SQL:', error);
             throw error;
@@ -153,7 +153,7 @@ class SqlService {
             const result = await db.execute(sqlQuery, values);
             const assertedStoryUid = result.recordset[0].uid;
             story.uid = assertedStoryUid;
-            logHandler(`Registering new story to ${story.rundownStr}: ${story.storySlug}`);
+            logger(`[SQL] Registering new story to {${story.rundownStr}}: {${story.storySlug}}`);
             return assertedStoryUid;
         } catch (error) {
             console.error('Error executing query:', error); 
@@ -194,7 +194,7 @@ class SqlService {
         `;
         try {
             await db.execute(sqlQuery, values);
-            logHandler(`Reorder story in ${rundownStr}: ${storyName}`);
+            logger(`[SQL] Reorder story in {${rundownStr}}: {${storyName}}`);
         } catch (error) {
             console.error('Error executing query:', error);
         }
@@ -205,7 +205,7 @@ class SqlService {
         const sqlQuery = `DELETE FROM ngn_inews_stories WHERE uid = @uid;`;
         try {
             await db.execute(sqlQuery, values);
-            logHandler(`Story ${uid} deleted from ${rundownStr}`);
+            logger(`[SQL] Story {${uid}} deleted from {${rundownStr}}`);
     
         } catch (error) {
             console.error(`Error deleting ${uid} story:`, error);
@@ -263,9 +263,9 @@ class SqlService {
         try {
             const result =await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                logHandler(`GFX item in ${rundownStr}, story ${item.story} updated`); 
+                logger(`[SQL] Item in {${rundownStr}}, story {${item.story}} updated`); 
             } else {
-                logHandler(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
+                logger(`[SQL] Item {${item.uid}}: order: {${item.ord}]} in {${rundownStr}} story {${item.story}} doesn't exists in DB`,"red");
             }
             return result.rowsAffected[0] > 0;
         } catch (error) {
@@ -289,9 +289,9 @@ class SqlService {
         try {
             const result =await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                logHandler(`GFX item ${gfxItem} order changed`); 
+                logger(`[SQL] GFX item {${gfxItem}} order changed`); 
             } else {
-                logHandler(`WARNING! GFX ${item.uid} [${item.ord}] in ${rundownStr}, story ${item.story} doesn't exists in DB`);
+                logger(`[SQL] Item {${item.uid}} order:{${item.ord}} in {${rundownStr}}, story {${item.story}} doesn't exists in DB`,"red");
             }
 
         } catch (error) {
@@ -304,7 +304,7 @@ class SqlService {
         const query = `DELETE FROM ngn_inews_items WHERE uid = ${uid}`;
         try {
             await db.execute(query);
-            logHandler(`Cleared GFX item ${uid} from SQL`);
+            logger(`[SQL] Cleared GFX item {${uid}} from SQL`);
             } catch (error) {
             console.error(`Error clearing item ${uid} from SQL:`, error);
             }
@@ -325,9 +325,9 @@ class SqlService {
         try {
             const result =await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                logHandler(`Item ${uid} has been disabled`); 
+                logger(`[SQL] Item ${uid} has been disabled`); 
             } else {
-                logHandler(`WARNING! Item ${uid} doesn't exists in DB`);
+                logger(`[SQL] WARNING! Item ${uid} doesn't exists in DB`);
             }
 
         } catch (error) {
@@ -351,9 +351,9 @@ class SqlService {
         try {
             const result = await db.execute(sqlQuery, values);
             if(result.rowsAffected[0] > 0){
-                logHandler(`Items in ${storyID} disabled`);
+                logger(`[SQL] Items in {${storyID}} disabled`);
             } else {
-                logHandler(`WARNING! No items of story ${storyID} found in DB`);
+                logger(`[SQL] WARNING! No items of story {${storyID}} found in DB`);
             }
 
         } catch (error) {
@@ -365,7 +365,7 @@ class SqlService {
         const query = `DELETE FROM ngn_inews_items WHERE story = ${uid}`;
         try {
             await db.execute(query);
-            logHandler(`Cleared story ${uid} items`);
+            logger(`[SQL] Cleared story {${uid}} items`);
             } catch (error) {
             console.error('Error clearing story items from SQL:', error);
             }
@@ -471,7 +471,7 @@ class SqlService {
         try {
             // Execute the update query with the provided values
             await db.execute(sqlQuery, values);
-            logHandler(`Item ${item.gfxItem} updated from the plugin`);
+            logger(`[SQL] Item {${item.gfxItem}} updated from the plugin`);
         } catch (error) {
             console.error('Error on updating GFX item:', error);
         }
@@ -575,7 +575,7 @@ class SqlService {
         `;
         try {
             await db.execute(updateQuery, values);
-            logHandler(`Rundown un-monitored: ${rundownStr}`);
+            logger(`[SQL] Rundown un-monitored: {${rundownStr}}`);
             } catch (error) {
             console.error('Error un-monitor rundown:', error);
             }
@@ -585,7 +585,7 @@ class SqlService {
         const query = `DELETE FROM ngn_inews_stories WHERE rundown = ${uid}`;
         try {
             await db.execute(query);
-            logHandler(`Cleared unmonitored stories`);
+            logger(`[SQL] Cleared unmonitored stories`);
             } catch (error) {
             console.error('Error clearing un-monitored stories from SQL:', error);
             }
@@ -595,18 +595,12 @@ class SqlService {
         const query = `DELETE FROM ngn_inews_items WHERE rundown = ${uid}`;
         try {
             await db.execute(query);
-            logHandler(`Cleared unmonitored items`);
+            logger(`[SQL] Cleared unmonitored items`);
             } catch (error) {
             console.error('Error clearing un-monitored items from SQL:', error);
             }
     }
 }    
-
-const sqlDebug = appConfig.sqlDebug;
-
-function logHandler(message){
-    if(sqlDebug){logger(`SQL service: ` + message);}  
-}
 
 const sqlService = new SqlService();
 

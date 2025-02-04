@@ -2,6 +2,7 @@ import net from 'net';
 import appConfig from '../3-utilities/app-config.js';
 import parser from '../3-utilities/mos-parser.js';
 import mosCommands from '../3-utilities/mos-cmds.js';
+import logger from '../3-utilities/logger.js';
 
 class MosMediaConnector {
     
@@ -46,14 +47,14 @@ class MosMediaConnector {
             });
     
             this.mediaClient.once('close', () => {
-                console.log('MOS media client disconnected. Trying to reconnect...');
+                logger('[TCP_MEDIA] MOS media client disconnected. Trying to reconnect...',"red");
                 setTimeout(() => { this.startMediaClient(); }, 5000); // Reconnect logic
             });
     
             this.mediaClient.once('error', (err) => {
-                console.log(`Media Client Error: ${err.message}`);
+                logger(`[TCP_MEDIA] Media Client Error: ${err.message}`,red);
                 if (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') {
-                    console.log('Reconnecting due to network issue...');
+                    logger('[TCP_MEDIA] Reconnecting due to network issue...',"red");
                     setTimeout(() => { this.startClient(); }, 5000); // Attempt to reconnect after timeout
                 }
                 reject(err); // Reject if there's an error
@@ -86,20 +87,20 @@ class MosMediaConnector {
                 });
     
                 socket.on('close', () => {
-                    console.log('MOS Media Server closed');
+                    logger('[TCP_MEDIA] MOS Media Server closed',"red");
                     this.mediaServerSocket = null;
                 });
     
                 socket.on('error', (err) => {
-                    console.log(`MOS Media Server error: ${err.message}`);
+                    logger(`[TCP_MEDIA] MOS Media Server error: ${err.message}`,"red");
                 });
             }).listen(appConfig.mediaPort, () => {
-                //console.log(`Media Server started on ${appConfig.mediaPort}`);
+                //logger(`[TCP_MEDIA] Media Server started on ${appConfig.mediaPort}`);
                 resolve(); // Resolve when the server starts
             });
     
             this.mediaServer.on('error', (err) => {
-                console.log(`Media Server Error: ${err.message}`);
+                logger(`[TCP_MEDIA] Media Server Error: ${err.message}`,"red");
                 reject(err); // Reject if there's an error starting the server
             });
         });
@@ -110,7 +111,7 @@ class MosMediaConnector {
             const buffer = Buffer.from(payload);
             this.mediaServerSocket.write(buffer);
         } else {
-            console.error('No active media-listener connection');
+            logger('[TCP_MEDIA] No active media-listener connection',"red");
         }
     }
 
@@ -118,9 +119,9 @@ class MosMediaConnector {
         if (this.mediaClient.readyState === 'open') {
             const buffer = Buffer.from(payload);
             this.mediaClient.write(buffer);
-            console.log('Data sent to media-client');
+            logger('[TCP_MEDIA] Data sent to media-client');
         } else {
-            console.error('Media-client not connected');
+            logger('[TCP_MEDIA] Media-client not connected',"red");
         }
     }
 }

@@ -41,11 +41,11 @@ class OctopusProcessor {
         // Determine event type and handle it
         if (cachedStory.name !== story.storySlug) { // Item slug change event
             await sqlService.modifyDbStory(story);
-            logger(`Story ${cachedStory.name} slug changed to ${story.storySlug}`);
+            logger(`[STORY] Story {${cachedStory.name}} slug changed to {${story.storySlug}}`);
         
         } else if (cachedStory.number !== story.storyNum) {  // Item Num change event     
             await sqlService.modifyDbStory(story);           
-            logger(`Story ${story.storySlug} number changed to ${story.storyNum}`);
+            logger(`[STORY] Story {${story.storySlug}} number changed to {${story.storyNum}}`);
         
         } else if (story.item.length > cachedStory.item.length) { // New item event
             const storyItemIds = story.item.map(item => item.itemID);
@@ -61,12 +61,12 @@ class OctopusProcessor {
             for (const item of itemsToDelete){
                 await deleteManager.deleteItem(item);
                 itemsHash.removeItem(item);
-                console.log(`Item ${item} disabled.`);
+                logger(`[STORY] Item {${item}} disabled.`);
             }
 
         } else { // Reorder item check (fallback case)
     
-            logger(`Syncing items order in ${story.storySlug}`);
+            logger(`[STORY] Syncing story {${story.storySlug}}`);
             for(const item of story.item){
                 await sqlService.updateItemOrd(rundownStr, item.mosExternalMetadata.gfxItem, item.ord);
             }
