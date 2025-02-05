@@ -19,7 +19,8 @@ appConfig.rundownPort = 10541;
 appConfig.debug = {
     mos:0,
     sql:0,
-    functions:0
+    functions:0,
+    rawMos:0
 }
 
 

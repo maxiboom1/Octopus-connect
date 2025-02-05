@@ -6,7 +6,7 @@ import logger from "./logger.js";
 function parseMos(buffer, port) {
     try {
       const decodedData = buffer.toString();
-      if(appConfig.showRawMos) {logger("Raw MOS: " + decodedData);}
+      if(appConfig.debug.rawMos) {logger("Raw MOS: " + decodedData);}
       const parser = new XMLParser({
           ignoreAttributes: false,   // Keep attributes
           attributeNamePrefix: '@_', // Prefix for attributes, adjust as needed
