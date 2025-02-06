@@ -3,7 +3,9 @@ import logger from "../3-utilities/logger.js";
 import octopusService from "./octopus-service.js";
 import appProcessor from "./app-processor.js";
 import findRoID from "../3-utilities/findRoID.js";
+import appConfig from "../3-utilities/app-config.js";
 
+const logMosIncomingMessages = appConfig.debug.showMos;
 
 async function mosRouter(msg, port) {
     // double !! converts expression to boolean - so, 
@@ -80,12 +82,25 @@ async function mosRouter(msg, port) {
             const roID = findRoID(msg);
             if(roID){ackService.sendAck(roID);}
     }
+    
+    if(logMosIncomingMessages){
+        logger(`[MOS-DEBUG] ${color(JSON.stringify(msg),"dimmed")}`); 
+    }
 }
 
-function color(msg) { // Used to set color to MOS events in console
-    const color = "\x1b[33m"
-    const reset = "\x1b[0m"
-    return color + msg + reset;
+function color(msg, color = "yellow") { // Used to set color to MOS events in console
+    
+    const c = {
+        yellow: "\x1b[33m",
+        green: "\x1b[32m",
+        dimmed: "\x1b[38;5;244m",
+        reset: "\x1b[0m"
+    }
+    
+    if(c[color] === undefined) color = "yellow";
+
+    return c[color] + msg + c.reset;
+
 };
 
 export default mosRouter;

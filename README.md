@@ -7,6 +7,12 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Application notes
 
+### V 1.1.5
+
+- Fixed bug when rundown name is a number - by converting to String on Sql methods.
+-
+
+
 ### V 1.1.4
 
 - Implemented more-detailed log model across the project - each module has its own category ([MOS], [SQL], [STORY] etc..). I need to document log standards. 

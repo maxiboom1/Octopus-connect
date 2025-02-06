@@ -24,7 +24,7 @@ class MosConnector {
             let buffer = Buffer.alloc(0); // Initialize an empty buffer for client data
     
             this.client.connect({ host: appConfig.octopusIpAddr, port: appConfig.rundownPort }, () => {
-                logger(`[TCP] MOS client connected to ${appConfig.ncsID} at ${appConfig.octopusIpAddr}`);
+                logger(`[TCP] MOS client connected to ${appConfig.ncsID} at ${appConfig.octopusIpAddr}:${appConfig.rundownPort}`);
                 resolve(); // Resolve when connected
             });
     
@@ -85,7 +85,7 @@ class MosConnector {
                 });
 
                 socket.on('close', () => {
-                    logger('[TCP] MOS Server closed', "red");
+                    //logger('[TCP] MOS Server closed', "red");
                     this.serverSocket = null;
                 });
 
@@ -93,7 +93,7 @@ class MosConnector {
                     logger(`[TCP] MOS Server error: ${err.message}`,"red");
                 });
             }).listen(appConfig.rundownPort, () => {
-                logger(`[TCP] Server started on ${appConfig.rundownPort}`);
+                //logger(`[TCP] Server started on ${appConfig.rundownPort}`);
                 resolve(); // Resolve when the server starts
             });
 
@@ -110,7 +110,7 @@ class MosConnector {
                 const buffer = Buffer.from(payload);
                 this.serverSocket.write(buffer);
             } else {
-                console.error('No active listener connection');
+                //console.error('No active listener connection');
             }
         } catch (error) {
             console.error('Error sending data to listener:', error);

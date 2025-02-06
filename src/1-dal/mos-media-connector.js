@@ -24,7 +24,7 @@ class MosMediaConnector {
             let buffer = Buffer.alloc(0); // Initialize an empty buffer for media client data
     
             this.mediaClient.connect({ host: appConfig.octopusIpAddr, port: appConfig.mediaPort }, () => {
-                //console.log(`MOS media client connected to ${appConfig.mediaPort}`);
+                logger(`[TCP] MOS media client connected to ${appConfig.ncsID} at ${appConfig.octopusIpAddr}:${appConfig.mediaPort}`);
                 resolve(); // Resolve when connected
             });
     

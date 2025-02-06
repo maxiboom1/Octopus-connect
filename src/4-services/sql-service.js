@@ -34,7 +34,7 @@ class SqlService {
 
     async addDbRundown(rundownStr,roID) {
         const values = {
-            name: rundownStr,
+            name: String(rundownStr),
             lastUpdate: timeConvertors.createTick(),
             production: appConfig.production,
             enabled: 1,
@@ -548,7 +548,7 @@ class SqlService {
             const values = {
                 uid: uid,
                 lastupdate: timeConvertors.createTick(),
-                name: rundownStr
+                name: String(rundownStr)
             }
             const sqlQuery = `
                 UPDATE ngn_inews_rundowns

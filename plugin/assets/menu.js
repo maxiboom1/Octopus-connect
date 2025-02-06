@@ -240,7 +240,7 @@ async function renderItem(templateId,gfxItem, itemID){
             
         };
     } else {
-        showPopup(`Error! This element was deleted. Close this window and delete the element from Inews story`);
+        showPopup(`Error! This element was deleted. Close this window and delete the element from NRCS story`);
         document.getElementById("productionContainer").style.display = "none";
     }
 
