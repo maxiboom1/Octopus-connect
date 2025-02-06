@@ -34,9 +34,10 @@ class AppProcessor {
         for(const ro of roArr){
              const rundownStr = ro.roSlug;
              const roID = ro.roID;
-             const uid = await sqlService.addDbRundown(rundownStr,roID);
-             await cache.initializeRundown(rundownStr,uid, appConfig.production, roID);
-             this.roQueue.push(roID); // Add roID to queue
+             const production = this.getProdByRundownStr(rundownStr);
+             const uid = await sqlService.addDbRundown(rundownStr,roID,production);
+             await cache.initializeRundown(rundownStr,uid, production, roID);
+             this.roQueue.push(ro.roID); // Add roID to queue
         }
         // Now, when cache is updated, hide unwatched rundowns in sql
         await sqlService.hideUnwatchedRundowns();
@@ -80,10 +81,11 @@ class AppProcessor {
     async roCreate(msg){
         const rundownStr = msg.mos.roCreate.roSlug;
         const roID = msg.mos.roCreate.roID;
+        const production = this.getProdByRundownStr(rundownStr);
         
         // Register rundown in DB and cache
-        const uid = await sqlService.addDbRundown(rundownStr,roID);
-        await cache.initializeRundown(rundownStr,uid, appConfig.production, roID);
+        const uid = await sqlService.addDbRundown(rundownStr,roID,production);
+        await cache.initializeRundown(rundownStr,uid, production, roID);
         
         //Send ack to NCS
         ackService.sendAck(msg.mos.roCreate.roID);
@@ -96,10 +98,10 @@ class AppProcessor {
     async roDelete(msg){
         const {uid,rundownStr} = await cache.getRundownUidAndStrByRoID(msg.mos.roDelete.roID);
         
-        // Delete rundown, its stories and items from DB
+        // Delete rundown and its stories 
         await sqlService.deleteDbRundown(uid, rundownStr);
         await sqlService.deleteDbStoriesByRundownID(uid);
-        await sqlService.deleteDbItemsByRundownID(uid);
+        //await sqlService.deleteDbItemsByRundownID(uid);
         
         // Delete rundown stories and items from cache
         await cache.deleteRundownFromCache(rundownStr);
@@ -120,6 +122,16 @@ class AppProcessor {
             await cache.modifyRundownStr(rundownStr, newRundownStr);
             logger(`[RUNDOWN] Rundown name changed to {${newRundownStr}}`);
         }
+    }
+
+    getProdByRundownStr(rundownStr) {
+        const p = appConfig.rundowns;
+        for (const key in p) {
+            if (rundownStr.includes(key)) {
+                return p[key];
+            }
+        }
+        return p["default"];
     }
     
 }

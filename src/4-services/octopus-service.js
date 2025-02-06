@@ -39,7 +39,12 @@ class OctopusProcessor {
         story.ord = cachedStory.ord;
         
         // Determine event type and handle it
-        if (cachedStory.name !== story.storySlug) { // Item slug change event
+        if (cachedStory.floating !== story.floating) { // Floating status compare
+            const action = story.floating ===1 ? "floated": "un-floated";
+            await sqlService.modifyDbStory(story);
+            logger(`[STORY] Story {${story.storySlug}} has been ${action}`);
+        
+        } else if (cachedStory.name !== story.storySlug) { // Item slug change event
             await sqlService.modifyDbStory(story);
             logger(`[STORY] Story {${cachedStory.name}} slug changed to {${story.storySlug}}`);
         
@@ -202,6 +207,11 @@ class OctopusProcessor {
         story.roID = rundownMeta.roID;
         story.rundown = rundownMeta.uid;
         story.production = rundownMeta.production;
+        story.floating = story.storySlug.endsWith(' [SKIP]') ? 1:0;
+        if(story.floating === 1){
+            story.storySlug = story.storySlug.slice(0,-7); // Slice the " [SKIP]" from story name
+        }
+        
         return story;
     }
      

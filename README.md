@@ -7,10 +7,26 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Application notes
 
+### V 1.1.6
+
+- On MOS-Device octopus level: Use "avoid roReplace" - so if user renumber , or resend rundown - it sends replaced stories events instead roReplace.
+- Added floating event handling - once the story floated - It send replace command with [SKIP] at storySlug end. We handle it in story constructor.
+- Added handling for production assignment based on provided string masks - if rundown name includes one of the mask strings - we give to this rundown mask value (production).
+So if we have rundown like "Morning-show-08-02-2025", and mask {"Morning": 10050}, then the rundown will get 10050 production id. 
+In case no match was found - rundown will get default production.
+User can configure rundown production in config file:
+
+```
+    "rundowns": {
+        "morning-show": 10004,
+        "default":20013
+    }
+
+```
+
 ### V 1.1.5
 
 - Fixed bug when rundown name is a number - by converting to String on Sql methods.
--
 
 
 ### V 1.1.4

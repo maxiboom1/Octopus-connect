@@ -11,6 +11,7 @@ class MosMediaConnector {
         this.mediaServer = null;
         this.mediaServerSocket = null;
         this.mosDelimiter = mosCommands.mosDelimitedUtf8();
+        this.port = appConfig.mediaPort;
     }
 
     async connect() {
@@ -39,7 +40,7 @@ class MosMediaConnector {
                     const completeMessage = Uint8Array.prototype.slice.call(buffer, 0, endTagIndex + this.mosDelimiter.length);
     
                     // Parse the complete message
-                    parser.parseMos(completeMessage, "media-client");
+                    parser.parseMos(completeMessage, `media-client ${this.port}`);
     
                     // Remove the processed message from the buffer
                     buffer = Uint8Array.prototype.slice.call(buffer, endTagIndex + this.mosDelimiter.length);
@@ -52,7 +53,7 @@ class MosMediaConnector {
             });
     
             this.mediaClient.once('error', (err) => {
-                logger(`[TCP_MEDIA] Media Client Error: ${err.message}`,red);
+                logger(`[TCP_MEDIA] Media Client Error: ${err.message}`,"red");
                 if (err.code === 'ETIMEDOUT' || err.code === 'ECONNREFUSED') {
                     logger('[TCP_MEDIA] Reconnecting due to network issue...',"red");
                     setTimeout(() => { this.startClient(); }, 5000); // Attempt to reconnect after timeout
@@ -79,7 +80,7 @@ class MosMediaConnector {
                         const completeMessage = Uint8Array.prototype.slice.call(buffer, 0, endTagIndex + this.mosDelimiter.length);
     
                         // Parse the complete message
-                        parser.parseMos(completeMessage, "media-listener");
+                        parser.parseMos(completeMessage, `media-listener ${this.port}`);
     
                         // Remove the processed message from the buffer
                         buffer = Uint8Array.prototype.slice.call(buffer, endTagIndex + this.mosDelimiter.length);

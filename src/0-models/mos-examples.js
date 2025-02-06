@@ -114,3 +114,16 @@ const InsertMessage = {
       }
     }
 }
+
+const skipMessage = { 
+    "mos": 
+    { "mosID": "newsarts", 
+        "ncsID": "octopus", 
+        "messageID": 37, 
+        "octext_roStorySkip": { 
+            "roID": 12150507, 
+            "storyID": 12769716, 
+            "skip": 1 
+        } 
+    } 
+}

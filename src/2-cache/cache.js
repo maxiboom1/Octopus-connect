@@ -106,6 +106,7 @@ class Cache {
             ord: story.ord,
             production: story.production,
             rundown:story.rundown,
+            floating:story.floating,
             item: story.item
         };
     }

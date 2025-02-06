@@ -11,6 +11,7 @@ class MosConnector {
         this.server = null;
         this.serverSocket = null; // Store the single active connection for the listener
         this.mosDelimiter = mosCommands.mosDelimitedUtf8();
+        this.port = appConfig.rundownPort
     }
 
     async connect() {
@@ -39,7 +40,7 @@ class MosConnector {
                     const completeMessage = Uint8Array.prototype.slice.call(buffer, 0, endTagIndex + this.mosDelimiter.length);
     
                     // Parse the complete message
-                    parser.parseMos(completeMessage, "client");
+                    parser.parseMos(completeMessage, `client ${this.port}`);
     
                     // Remove the processed message from the buffer
                     buffer = Uint8Array.prototype.slice.call(buffer, endTagIndex + this.mosDelimiter.length);
@@ -78,7 +79,7 @@ class MosConnector {
                     // Search for the `</mos>` delimiter in the buffer
                     while ((endTagIndex = buffer.indexOf(this.mosDelimiter)) !== -1) {
                         const completeMessage = Uint8Array.prototype.slice.call(buffer, 0, endTagIndex + this.mosDelimiter.length);
-                        parser.parseMos(completeMessage, "listener");
+                        parser.parseMos(completeMessage, `listener ${this.port}`);
                         buffer = Uint8Array.prototype.slice.call(buffer, endTagIndex + this.mosDelimiter.length);
                     }
 

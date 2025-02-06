@@ -8,6 +8,10 @@ import appConfig from "../3-utilities/app-config.js";
 const logMosIncomingMessages = appConfig.debug.showMos;
 
 async function mosRouter(msg, port) {
+    
+    if(logMosIncomingMessages){
+        logger(`[MOS-DEBUG] {${port}} ${color(JSON.stringify(msg),"dimmed")}`); 
+    }
     // double !! converts expression to boolean - so, 
     // if msg.mos.heartbeat exists - the !! convert it to "true"
     switch (true) {
@@ -83,9 +87,7 @@ async function mosRouter(msg, port) {
             if(roID){ackService.sendAck(roID);}
     }
     
-    if(logMosIncomingMessages){
-        logger(`[MOS-DEBUG] ${color(JSON.stringify(msg),"dimmed")}`); 
-    }
+
 }
 
 function color(msg, color = "yellow") { // Used to set color to MOS events in console

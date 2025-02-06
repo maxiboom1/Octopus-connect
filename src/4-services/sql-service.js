@@ -32,11 +32,11 @@ class SqlService {
         }
     }
 
-    async addDbRundown(rundownStr,roID) {
+    async addDbRundown(rundownStr,roID,production) {
         const values = {
             name: String(rundownStr),
             lastUpdate: timeConvertors.createTick(),
-            production: appConfig.production,
+            production: production,
             enabled: 1,
             tag: "",
             roID:roID
@@ -139,7 +139,7 @@ class SqlService {
             ord: story.ord,
             ordupdate: timeConvertors.createTick(),
             enabled: 1,
-            floating: 0,
+            floating: story.floating,
             tag: "",
             number:story.storyNum || "",
             properties:"",
@@ -165,11 +165,12 @@ class SqlService {
             name:story.storySlug,
             lastupdate: timeConvertors.createTick(),
             number:story.storyNum || "",
-            storyID:story.storyID
+            storyID:story.storyID,
+            floating: story.floating
         };
         const sqlQuery = `
             UPDATE ngn_inews_stories
-            SET name = @name, lastupdate = @lastupdate, number=@number
+            SET name = @name, lastupdate = @lastupdate, number=@number, floating = @floating
             WHERE storyID = @storyID;
         `;
         
