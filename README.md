@@ -27,6 +27,7 @@ User can configure rundown production in config file:
 ### V 1.1.5
 
 - Fixed bug when rundown name is a number - by converting to String on Sql methods.
+- On lineup un-monitor - we don't delete items
 
 
 ### V 1.1.4
