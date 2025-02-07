@@ -16,7 +16,7 @@ function parseMos(buffer, port) {
           parseTagValue: true        // Parse inner text of tags, even when empty
       });
       let obj = parser.parse(decodedData);
-      mosRouter(obj, port);
+      mosRouter.mosMessageProcessor(obj, port);
 
   } catch (error) {
       console.error(`${port}: Error parsing MOS message: ${buffer.toString()}`, error);

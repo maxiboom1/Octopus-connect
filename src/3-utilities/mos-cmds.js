@@ -5,6 +5,7 @@ class MosCommands {
     constructor() {
         this.mosID = appConfig.mosID.toString(); // Store mosID once onload
         this.ncsID = appConfig.ncsID.toString(); // Store ncsID once onload
+        this.messageID = 2000; // Initialize the message ID counter
     }
 
     reqMachInfo() {
@@ -46,7 +47,7 @@ class MosCommands {
             <mos>
                 <mosID>${this.mosID}</mosID>
                 <ncsID>${this.ncsID}</ncsID>
-                <messageID>1</messageID>
+                <messageID>${this.messageID}</messageID>
                 <mosItemReplace>
                     <roID>${story.roID}</roID>
                     <storyID>${story.storyID}</storyID>
@@ -65,8 +66,15 @@ class MosCommands {
                         </item>
                 </mosItemReplace>
             </mos>`;  
-            return msg;
+            
+            const result = {
+                replaceMosMessage:msg,
+                messageID:this.messageID
+            };
+            this.messageID++;
+            return result;
     }
+
 
 }
 

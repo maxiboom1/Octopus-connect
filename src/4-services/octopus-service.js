@@ -209,8 +209,9 @@ class OctopusProcessor {
         }
         const rundownMeta = await cache.getRundownList(story.rundownStr);
         story.roID = rundownMeta.roID;
-        story.rundown = rundownMeta.uid;
+        story.rundown = String(rundownMeta.uid);
         story.production = rundownMeta.production;
+        story.storySlug = String(story.storySlug);
         story.floating = story.storySlug.endsWith(' [SKIP]') ? 1:0;
         if(story.floating === 1){
             story.storySlug = story.storySlug.slice(0,-7); // Slice the " [SKIP]" from story name

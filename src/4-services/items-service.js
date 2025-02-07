@@ -3,6 +3,7 @@ import mosConnector from "../1-dal/mos-connector.js";
 import mosCommands from "../3-utilities/mos-cmds.js";
 import itemsHash from "../2-cache/items-hashmap.js";
 import logger from "../3-utilities/logger.js";
+import mosRouter from "./mos-router.js";
 
 async function registerItems(story, options = { itemIDArr: [], replaceEvent:false }) {
     const { rundown, uid: storyUid, rundownStr } = story;
@@ -57,9 +58,19 @@ async function handleDuplicateItem(item, story, el, ord) {
     const assertedUid = await sqlService.storeNewDuplicate(duplicate);
 
     itemsHash.registerItem(assertedUid);
-
-    mosConnector.sendToClient(mosCommands.mosItemReplace(story, el, assertedUid));
-    logger(`[ITEM] Saving duplicate item {${assertedUid}}, and send mosItemReplace to NRCS`);
+    const m = mosCommands.mosItemReplace(story, el, assertedUid); // Returns {item:{},messageID:messageID}
+    
+    mosConnector.sendToClient(m.replaceMosMessage);
+    
+    logger(`[ITEM] Saving duplicate item {${assertedUid}}, and send mosItemReplace to NRCS. Wait for ack...`);
+    
+    // Wait for roAck for sended mosItemReplace
+    try {
+        await waitForRoAck(m.messageID);
+    } catch (error) {
+        logger(error.message, "red");
+    }
+    
 }
 
 async function createNewItem(item, rundownStr,itemSlug) {
@@ -76,6 +87,26 @@ async function createNewItem(item, rundownStr,itemSlug) {
 function constructItem(gfxItem, rundown, storyUid, ord) {
     return { uid: gfxItem, rundown, story: storyUid, ord };
 }
+
+function waitForRoAck(messageID, timeout = 5000) {
+    return new Promise((resolve, reject) => {
+        const listener = (msg) => {
+            if (msg.mos && msg.mos.roAck && msg.mos.messageID === messageID) {
+                mosRouter.off('roAckMessage', listener);
+                logger(`[ITEM] mosItemReplace ack'd for messageID: ${messageID}`, "green");
+                resolve();
+            }
+        };
+        
+        const timer = setTimeout(() => {
+            mosRouter.off('roAckMessage', listener);
+            reject(new Error(`[ITEM] Timeout waiting for roAck (messageID: ${messageID})`));
+        }, timeout);
+
+        mosRouter.on('roAckMessage', listener);
+    });
+}
+
 
 export default { registerItems };
 
