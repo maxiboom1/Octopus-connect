@@ -62,7 +62,7 @@ async function handleDuplicateItem(item, story, el, ord) {
     
     mosConnector.sendToClient(m.replaceMosMessage);
     
-    logger(`[ITEM] Saving duplicate item {${assertedUid}}, and send mosItemReplace to NRCS. Wait for ack...`);
+    logger(`[ITEM] Saving duplicate item {${assertedUid}}, sending mosItemReplace {${m.messageID}}`);
     
     // Wait for roAck for sended mosItemReplace
     try {
