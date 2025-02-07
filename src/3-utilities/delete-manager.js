@@ -24,7 +24,7 @@ class DeleteManager {
                     return;
                 }
                 await this.executeDelete(storyUid, itemsIdArr); 
-            }, 5000);
+            }, 10000);
 
         } catch (error) {
             logger(`Error deleting items for story ${storyUid}: ${error.message}`);

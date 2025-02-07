@@ -26,6 +26,8 @@ class OctopusProcessor {
 
         // Update last updates to story and rundown
         await sqlService.rundownLastUpdate(story.rundownStr);
+
+        logger(`[STORY] Registering new story to {${story.rundownStr}}: {${story.storySlug}}`);
         
     }
 
@@ -130,7 +132,7 @@ class OctopusProcessor {
         }
         
         await sqlService.rundownLastUpdate(rundownStr);
-
+        logger(`[STORY] Reorder story {${sourceStory.name}} in {${rundownStr}} rundown` );
         ackService.sendAck(roID);
 
     }
@@ -179,6 +181,8 @@ class OctopusProcessor {
                 await deleteManager.deleteItemByStoryUid(rundownStr, sourceStoryID ,stories[sourceStoryID].uid);
                 await cache.deleteStory(rundownStr, sourceStoryID);
                 await sqlService.deleteStory(rundownStr, stories[storyID].uid);
+                logger(`[STORY] Story {${stories[storyID].name}} has been deleted, and all included items delete scheduled.`);
+
             } else { 
                 // decrement story id in sql and cache
                 await cache.modifyStoryOrd(rundownStr, storyID, currentOrd-1);
@@ -205,8 +209,9 @@ class OctopusProcessor {
         }
         const rundownMeta = await cache.getRundownList(story.rundownStr);
         story.roID = rundownMeta.roID;
-        story.rundown = rundownMeta.uid;
+        story.rundown = String(rundownMeta.uid);
         story.production = rundownMeta.production;
+        story.storySlug = String(story.storySlug);
         story.floating = story.storySlug.endsWith(' [SKIP]') ? 1:0;
         if(story.floating === 1){
             story.storySlug = story.storySlug.slice(0,-7); // Slice the " [SKIP]" from story name

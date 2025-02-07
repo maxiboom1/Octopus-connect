@@ -1,3 +1,7 @@
+import appConfig from "./app-config.js";
+
+const debug = appConfig.debug;
+
 /**
  * Logs a message to the console with an optional color.
  * 
@@ -9,6 +13,8 @@
  *                                   If the color is not recognized, the message will be logged without any color.
  */
 function logger(msg, color = "white"){
+    
+    if(debug.sql === 0 && msg.startsWith("[SQL]") && color != "red") return;
     
     if (colors[color] === undefined) { // If color arg wrong or unsupported
         console.log(`${getCurrentDateTime()}  ${msg}`);

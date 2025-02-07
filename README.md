@@ -7,6 +7,22 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Application notes
 
+### V 1.2.0
+
+- **Implemented the `mosItemReplace` queue mechanism.** We now wait for the `roAck` message from the NRCS before proceeding with the next `mosItemReplace`, ensuring compliance with the core MOS protocol concept.
+
+#### How it works:
+- `mosCommands.mosItemReplace` now returns `{ item: {}, messageID }`, where `messageID` is auto-incremented on each call.
+- `handleDuplicateItem` in `items-service` sends `mosItemReplace` and **awaits** the new function `waitForRoAck(messageID)`.  
+  - `waitForRoAck` listens for the `roAckMessage` event on `mosRouter`.  
+  - Once the event is received, `mosRouter` emits the message.  
+  - The function then checks if the `roAck` message's `messageID` matches the one we sent and resolves accordingly.  
+  - If no event is received within **5 seconds**, it rejects with an error message.  
+- `MosRouter` has been refactored into a class, extending `EventEmitter`.  
+  - When it receives `msg.mos.roAck`, it emits `roAckMessage`, which is caught by `waitForRoAck`.
+
+
+
 ### V 1.1.6
 
 - On MOS-Device octopus level: Use "avoid roReplace" - so if user renumber , or resend rundown - it sends replaced stories events instead roReplace.
