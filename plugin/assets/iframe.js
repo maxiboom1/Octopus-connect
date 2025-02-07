@@ -44,11 +44,13 @@ function createMosMessage(){
     if(document.body.hasAttribute("data-itemID")){
         itemID = document.body.getAttribute('data-itemID');
     }
+    const itemSlug = document.getElementById("nameInput").value.replace(/'/g, "")
+    const metadata = decodeURIComponent(__NA_GetValues());
     return `<mos> 
         <ncsItem>
             <item>
                 <itemID>${itemID}</itemID>
-                <itemSlug>${document.getElementById("nameInput").value.replace(/'/g, "")}</itemSlug>
+                <itemSlug>${itemSlug}</itemSlug>
                 <objID></objID>
                 <objAir>READY</objAir>
                 <mosID>newsarts</mosID>
@@ -56,6 +58,7 @@ function createMosMessage(){
                     <gfxItem>${gfxItem}</gfxItem>
                     <gfxTemplate>${templateId}</gfxTemplate>
                     <gfxProduction>${productionId}</gfxProduction>
+                    <metadata>${metadata}</metadata>
                     <modified>Plugin</modified>
                 </mosExternalMetadata>
             </item>

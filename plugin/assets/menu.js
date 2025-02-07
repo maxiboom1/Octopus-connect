@@ -15,6 +15,7 @@ async function getProductions() {
         option.text = production.name;
         productionSelector.add(option);
     });
+    getTemplates(); // This will automatically load and render first production 
 }
 
 async function getTemplates() { 

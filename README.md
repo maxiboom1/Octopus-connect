@@ -7,6 +7,13 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Application notes
 
+### V 1.2.1
+
+- Removed default option in the plugin opener - productions dropdown.
+- Also, plugin fetch the first production templates automatically.
+- Plugin saves the result of build-in template __NA_GetValues() - that return all item data. Thats is for the archive search. We save it under "mosExternalMetaDAta/metadata.
+
+
 ### V 1.2.0
 
 - **Implemented the `mosItemReplace` queue mechanism.** We now wait for the `roAck` message from the NRCS before proceeding with the next `mosItemReplace`, ensuring compliance with the core MOS protocol concept.
