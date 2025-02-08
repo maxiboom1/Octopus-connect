@@ -148,6 +148,7 @@ function createTemplateHtml(template){
 
 async function mosMsgFromHost(event) {
     var message = event.data;
+    console.log(message);
     if (event.origin != getNewsroomOrigin()) { 
         return; 
     }
@@ -157,7 +158,11 @@ async function mosMsgFromHost(event) {
         const templateId = extractTagContent(message, "gfxTemplate");
         const gfxItem = extractTagContent(message, "gfxItem");
         const itemID = extractTagContent(message, "itemID");
-        renderItem(templateId, gfxItem,itemID);
+        
+        //Sending also "data" and itemName from NRCS story - so if rundown is offline (un-monitored), user still can open and edit it
+        const cachedData = extractTagContent(message, "data").slice(1,-1);
+        const cachedName = extractTagContent(message, "itemSlug");
+        renderItem(templateId, gfxItem,itemID, cachedData,cachedName);
         
     }
     
@@ -212,39 +217,35 @@ function renderTemplate(templateId) {
 }
 
 // User loaded exists item in inews
-async function renderItem(templateId,gfxItem, itemID){
+async function renderItem(templateId,gfxItem, itemID, cachedData, cachedName){
     const itemObj = await fetchData(`${originUrl}/api/get-item-data/${gfxItem}`, "GET");
-    const itemData = itemObj.data.replace(/\\'/g, '%27'); // Fix " ' " single quote bug
-    const itemName = itemObj.name;
-
-    if(itemData !== "N/A"){
-        let url = `${originUrl}/templates/${templateId}.html`;
-        const iframe = document.getElementById('contentIframe');
-        iframe.src = url; // Set the source of the iframe to the URL  
-        
-        iframe.onload = function() {
     
-            try {
-                // Set item values in template
-                iframe.contentWindow.__NA_SetValues(itemData);   
-            } catch (error) {
-                console.log("Failed to complete __NA_SetValues", error);
-            }
+    // Here, we set item data depends of fetched from our sql - if no data in sql - we load data from NRCS story
+    const itemData = itemObj.data === "N/A" ? cachedData.replace(/\\'/g, '%27') : itemObj.data.replace(/\\'/g, '%27');
+    const itemName = itemObj.data === "N/A" ? cachedName :itemObj.name;
 
-            // Set item values
-            iframe.contentWindow.setGfxItem(gfxItem); // Set gfxItemId in iframe head as "data-gfxitem"
-            iframe.contentWindow.setItemID(itemID); // Set itemID in iframe head as "data-itemID"
-            iframe.contentWindow.nameInputUpdate(itemName,true);
-            // Show iframe
-            iframe.style.display = 'block'; // Show the iframe
-            iframe.contentWindow.selectFirstTextField();
-            
-        };
-    } else {
-        showPopup(`Error! This element was deleted. Close this window and delete the element from NRCS story`);
-        document.getElementById("productionContainer").style.display = "none";
+    let url = `${originUrl}/templates/${templateId}.html`;
+    const iframe = document.getElementById('contentIframe');
+    iframe.src = url; // Set the source of the iframe to the URL  
+    
+    iframe.onload = function() {
+
+        try {
+            // Set item values in template
+            iframe.contentWindow.__NA_SetValues(itemData);   
+        } catch (error) {
+            console.log("Failed to complete __NA_SetValues", error);
+        }
+
+        // Set item values
+        iframe.contentWindow.setGfxItem(gfxItem); // Set gfxItemId in iframe head as "data-gfxitem"
+        iframe.contentWindow.setItemID(itemID); // Set itemID in iframe head as "data-itemID"
+        iframe.contentWindow.nameInputUpdate(itemName,true);
+        // Show iframe
+        iframe.style.display = 'block'; // Show the iframe
+        iframe.contentWindow.selectFirstTextField();
+
     }
-
 }
 
 // Iframe calls that when user click "back"

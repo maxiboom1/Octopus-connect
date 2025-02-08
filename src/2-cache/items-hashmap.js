@@ -7,11 +7,11 @@ class ItemsHashmap {
         this.items.add(Number(uid));
     }
     removeItem(uid) {
-        this.items.delete(uid);
+        this.items.delete(Number(uid));
         return;
     }
     isUsed(uid) {
-        return this.items.has(uid);
+        return this.items.has(Number(uid));
     }
     list(){
         let list = "";

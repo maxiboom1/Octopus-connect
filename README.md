@@ -7,6 +7,29 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Application notes
 
+### V 1.3.0
+
+- Plugin saves on NRCS story "data" and "scripts". This for the ability restore the item, and open/edit item while rundown is offline (not in SQL).
+- Plugin modID is injected to templates-body, and not hardcoded.
+- Added "data" and "scripts" props to item MOS obj, that saved on NRCS.
+- Added "removeItemsMeta" before saving story to cache. It's clear meta, data and scripts from incoming stories, to avoid cache overload.
+- Items-service constructItem() now returns complete full data
+- On load, we delete all items from DB.
+- On rundown un-monitor - we delete all items and clear their hashmap.
+- In developer appConfig there is new config option - keepSqlItems. if it set, we don't delete items from SQL on load and on un-monitor.
+- Sql new method: upsertItem - it check if item exists on sql - if it is then updates only story position (rundown story ord), if not exists - write complete item with all data.
+Returns {success, event:"create"/"update", assertedUid}
+- In Items-service:
+* constructItem constructs all props from incoming items (since now we embed them in NRCS).
+* Create new item now handles cases when the incoming item not exists in SQL - in this case our SQL upsertItem is inserting the item, returning new uid, then the createNewItem sends sendMosItemReplace request to modify the gfxItem id in NRCS story. This way, we assign to the item new id. 
+* sendMosItemReplace with its awaiting to ack mechanism is refactored to separate method (as we call it from 2 places now - createNewItem and handleDuplicate) It accept action param to log what event accrued - Restore or Duplicate.
+- On plugin frontend:
+* Once the user open item, we get the complete item, including data.
+We send this data to "renderItem" func. RenderData then fetch perform HTTP GET to get this item data. If the response.data is "N/A" - that means no such item in SQL. Before 1.3.0, we used to show error popup in this case. Now, we use the data from NRCS, and still render the item. This allow user to open/edit items even if the item don't exist on DA. 
+* We removed "save" button from everywhere, since now we are storing complete item data in NRCS. This is concept-change upgrade.
+
+
+
 ### V 1.2.1
 
 - Removed default option in the plugin opener - productions dropdown.

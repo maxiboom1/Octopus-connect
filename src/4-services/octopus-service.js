@@ -11,16 +11,19 @@ class OctopusProcessor {
     
     // Triggered from roList incoming mos message, and from insert event
     async handleNewStory(story) {        
-
+        
         // Add props to story
         story = await this.constructStory(story);
 
         // Store story in DB, and save assigned uid
         story.uid = await sqlService.addDbStory(story);
         
-        // Save story to cache
-        await cache.saveStory(story);
+        // Create a deep copy of the story object
+        const storyCopy = this.removeItemsMeta(story)
 
+        // Clear meta form story items, and save story to cache
+        await cache.saveStory(storyCopy);
+        
         // Save Items of the story to DB
         await itemsService.registerItems(story);
 
@@ -39,7 +42,6 @@ class OctopusProcessor {
         await this.constructStory(story);
         const cachedStory = await cache.getStory(rundownStr, story.storyID);
         story.ord = cachedStory.ord;
-        
         // Determine event type and handle it
         if (cachedStory.floating !== story.floating) { // Floating status compare
             const action = story.floating ===1 ? "floated": "un-floated";
@@ -72,7 +74,7 @@ class OctopusProcessor {
             }
 
         } else { // Reorder item check (fallback case)
-    
+            
             logger(`[STORY] Syncing story {${story.storySlug}}`);
             for(const item of story.item){
                 await sqlService.updateItemOrd(rundownStr, item.mosExternalMetadata.gfxItem, item.ord);
@@ -80,8 +82,9 @@ class OctopusProcessor {
             
         }  
         
-        // overwrite cached story
-        await cache.saveStory(story)
+        // Clear story from meta, and update cache
+        const storyCopy = this.removeItemsMeta(story)
+        await cache.saveStory(storyCopy);
         
         // Update last updates
         await sqlService.rundownLastUpdate(story.rundownStr);
@@ -231,6 +234,22 @@ class OctopusProcessor {
         const targetStoryID = msg.mos.roElementAction.element_target.storyID;
         const story = msg.mos.roElementAction.element_source.story; 
         return {roID,rundownStr,targetStoryID,story}
+    }
+
+    removeItemsMeta(story){
+        
+        const storyCopy = JSON.parse(JSON.stringify(story));
+        
+        if (storyCopy.item && Array.isArray(storyCopy.item)) {
+            storyCopy.item.forEach(item => {
+                if (item.mosExternalMetadata) {
+                    delete item.mosExternalMetadata.data;
+                    delete item.mosExternalMetadata.scripts;
+                    delete item.mosExternalMetadata.metadata;
+                }
+            });
+        }
+        return storyCopy;
     }
 
 

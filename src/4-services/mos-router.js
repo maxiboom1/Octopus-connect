@@ -56,7 +56,7 @@ class MosRouter extends EventEmitter {
     
             // ****************** roAck handling ************************
             case !!msg.mos.roAck:
-                logger(`[MOS] {${this.color("roAck")}} are received from ${port}`);
+                //logger(`[MOS] {${this.color("roAck")}} are received from ${port}`);
                 this.emit('roAckMessage', msg);// Emit the message, 
                 break; 
             
@@ -69,7 +69,7 @@ class MosRouter extends EventEmitter {
                     await octopusService.storyMove(msg);
                 } 
                 else if(action === "REPLACE"){
-                    logger(`[MOS] {${this.color("roElementAction@REPLACE")}} are received from ${port}`);                
+                    logger(`[MOS] {${this.color("roElementAction@REPLACE")}} are received from ${port}`); 
                     await octopusService.storyReplace(msg);
                 } 
                 else if(action === "INSERT"){

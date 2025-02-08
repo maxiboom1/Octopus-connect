@@ -8,6 +8,7 @@ import mosCommands from "../3-utilities/mos-cmds.js";
 import appConfig from "../3-utilities/app-config.js";
 import octopusService from "./octopus-service.js";
 import logMessages from "../3-utilities/logger-messages.js";
+import itemsHash from "../2-cache/items-hashmap.js";
 
 // MOS 2.8.5
 class AppProcessor {
@@ -101,7 +102,10 @@ class AppProcessor {
         // Delete rundown and its stories 
         await sqlService.deleteDbRundown(uid, rundownStr);
         await sqlService.deleteDbStoriesByRundownID(uid);
-        //await sqlService.deleteDbItemsByRundownID(uid);
+        
+        //Delete item when user unmonitors rundown
+        await this.deleteItemsOnUnmonitor(uid);
+
         
         // Delete rundown stories and items from cache
         await cache.deleteRundownFromCache(rundownStr);
@@ -134,6 +138,19 @@ class AppProcessor {
         return p["default"];
     }
     
+    async deleteItemsOnUnmonitor(rundownId){
+        
+        if(appConfig.keepSqlItems) return;
+        
+        // Get items uid array, that related to rundownId
+        const itemsId = await sqlService.getItemsIdArrByRundownId(rundownId);
+        // Clear hash for those items
+        for(const id of itemsId){
+            itemsHash.removeItem(id);
+        }
+        await sqlService.deleteDbItemsByRundownID(rundownId);
+    }
+
 }
 
 

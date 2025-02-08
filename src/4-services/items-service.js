@@ -5,12 +5,11 @@ import itemsHash from "../2-cache/items-hashmap.js";
 import logger from "../3-utilities/logger.js";
 import mosRouter from "./mos-router.js";
 
+
 async function registerItems(story, options = { itemIDArr: [], replaceEvent:false }) {
     const { rundown, uid: storyUid, rundownStr } = story;
     let ord = 0;
-
     for (const el of story.item) {
-        
         const {gfxItem} = el.mosExternalMetadata;
         const itemID = el.itemID;
         
@@ -29,40 +28,90 @@ async function registerItems(story, options = { itemIDArr: [], replaceEvent:fals
             options.itemIDArr.splice(indexInAdd, 1);
         }
 
-        const item = constructItem(gfxItem, rundown, storyUid, ord);
+        const item = constructItem(el, rundown, storyUid, ord);
 
         if (itemsHash.isUsed(item.uid)) {
             await handleDuplicateItem(item, story, el, ord);
         } else {
-            await createNewItem(item, story.rundownStr, el.itemSlug);
+            await createNewItem(item, story,el);
         }
         
         ord++;
     }
+
+
+}
+
+async function createNewItem(item, story, el) { //Item: {uid, name, production, rundown, story, ord, template, data, scripts}
+    
+    const result = await sqlService.upsertItem(story.rundownStr, item);
+    
+    if (result.success) {
+        
+        itemsHash.registerItem(result.uid); // Register item in hash
+        
+        // Item was exists in DB ==> Update item
+        if(result.event === "update"){
+            logger(`[ITEM] New Item {${item.name}} updated in {${story.rundownStr}}`);
+        } 
+
+        // Item wasn't exist in DB ==> Restore item
+        else if(result.event === "create"){
+            logger(`[ITEM] New Item {${item.name}} restored in {${story.rundownStr}}`);
+            await sendMosItemReplace(story, el, result.uid, "ITEM RESTORE");
+        }
+
+    
+    } else {
+        logger(`[ITEM] OPPPS.. Failed to create/update ${item.uid}. Error details: ${result.error}`, "red");
+    }
+
 }
 
 async function handleDuplicateItem(item, story, el, ord) {
-    const originalItem = await sqlService.getFullItem(item.uid);
+    //const originalItem = await sqlService.getFullItem(item.uid);
 
     const duplicate = {
-        name: originalItem.name,
-        production: originalItem.production,
+        name: item.name,
+        production: item.production,
         rundown: story.rundown,
         story: story.uid,
         ord,
-        template: originalItem.template,
-        data: originalItem.data,
-        scripts: originalItem.scripts,
+        template: item.template,
+        data: item.data,
+        scripts: item.scripts,
     };
 
     const assertedUid = await sqlService.storeNewDuplicate(duplicate);
 
     itemsHash.registerItem(assertedUid);
+
+    await sendMosItemReplace(story, el, assertedUid, "DUPLICATE");
+   
+}
+
+function constructItem(item, rundown, storyUid, ord) {
+    return { 
+        uid: item.mosExternalMetadata.gfxItem,
+        name:item.itemSlug,
+        production: item.mosExternalMetadata.gfxProduction,
+        rundown, 
+        story: storyUid, 
+        ord,
+        template: item.mosExternalMetadata.gfxTemplate,
+        data:item.mosExternalMetadata.data,
+        scripts: item.mosExternalMetadata.scripts,
+        metadata:item.mosExternalMetadata.metadata
+    };
+}
+
+async function sendMosItemReplace(story, el, assertedUid, action){
+    
     const m = mosCommands.mosItemReplace(story, el, assertedUid); // Returns {item:{},messageID:messageID}
     
+    logger(`[ITEM] ${action}: Sending mosItemReplace for item {${assertedUid}}: messageID:{${m.messageID}}`,"blue");
+
     mosConnector.sendToClient(m.replaceMosMessage);
-    
-    logger(`[ITEM] Saving duplicate item {${assertedUid}}, sending mosItemReplace {${m.messageID}}`);
     
     // Wait for roAck for sended mosItemReplace
     try {
@@ -70,22 +119,7 @@ async function handleDuplicateItem(item, story, el, ord) {
     } catch (error) {
         logger(error.message, "red");
     }
-    
-}
 
-async function createNewItem(item, rundownStr,itemSlug) {
-    const result = await sqlService.updateItem(rundownStr, item);
-
-    if (result) {
-        itemsHash.registerItem(item.uid);
-        logger(`[ITEM] New Item {${itemSlug}} created in {${rundownStr}}`);
-    } else {
-        logger(`[ITEM] OPPPS.. Item ${item.uid} doesn't exists in SQL`, "red");
-    }
-}
-
-function constructItem(gfxItem, rundown, storyUid, ord) {
-    return { uid: gfxItem, rundown, story: storyUid, ord };
 }
 
 function waitForRoAck(messageID, timeout = 5000) {
@@ -107,6 +141,4 @@ function waitForRoAck(messageID, timeout = 5000) {
     });
 }
 
-
 export default { registerItems };
-

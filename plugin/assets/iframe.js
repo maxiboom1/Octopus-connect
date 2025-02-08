@@ -1,15 +1,4 @@
 // window.parent.funcName()
-// Show/Hide buttons logic
-async function clickOnSave(){
-    try{
-        const values = getItemData(); // returns item{name,data,scripts,templateId,productionId}       
-        const gfxItem = await window.parent.fetchData(`${originUrl}/api/set-item`,"POST",JSON.stringify(values));
-        setGfxItem(gfxItem);
-        showDragButton();
-    }catch(err){
-        console.error("Failed to post data");
-    }
-}
 
 // returns item{name,data,scripts,templateId,productionId}
 function getItemData(){
@@ -28,24 +17,23 @@ function getItemData(){
 }
 
 function drag(event) { 
-    const msg = createMosMessage(); // Returns well-formatted <mos> message as string
+    const msg = createMosMessage();
+    console.log(msg)
     event.dataTransfer.setData("text",msg);
-}
-
-function drop() {
-    showSaveButton();
 }
 
 function createMosMessage(){
     const templateId = document.body.getAttribute('data-template');
     const productionId = document.body.getAttribute('data-production');
     const gfxItem = document.body.getAttribute('data-gfxItem');
+    const mosID = document.body.getAttribute('data-mos-id');
     let itemID = "";
     if(document.body.hasAttribute("data-itemID")){
         itemID = document.body.getAttribute('data-itemID');
     }
+    const data = __NA_GetValues();
+    const scripts = JSON.stringify(__NA_GetScripts());
     const itemSlug = document.getElementById("nameInput").value.replace(/'/g, "")
-    const metadata = decodeURIComponent(__NA_GetValues());
     return `<mos> 
         <ncsItem>
             <item>
@@ -53,13 +41,15 @@ function createMosMessage(){
                 <itemSlug>${itemSlug}</itemSlug>
                 <objID></objID>
                 <objAir>READY</objAir>
-                <mosID>newsarts</mosID>
+                <mosID>${mosID}</mosID>
                 <mosExternalMetadata>
-                    <gfxItem>${gfxItem}</gfxItem>
+                    <gfxItem>${gfxItem === null? "0": gfxItem}</gfxItem>
                     <gfxTemplate>${templateId}</gfxTemplate>
                     <gfxProduction>${productionId}</gfxProduction>
-                    <metadata>${metadata}</metadata>
+                    <metadata>${decodeURIComponent(data)}</metadata>
                     <modified>Plugin</modified>
+                    <data>${JSON.stringify(data)}</data>
+                    <scripts>${scripts}</scripts>
                 </mosExternalMetadata>
             </item>
         </ncsItem>
@@ -82,7 +72,7 @@ function getItemID(){
     return document.body.getAttribute("data-itemID");
 }
 
-function showSaveButton(){document.getElementById("save").style.display = 'block'; hideDragButton();}
+//function showSaveButton(){document.getElementById("save").style.display = 'block'; hideDragButton();}
 function hideSaveButton(){document.getElementById("save").style.display = 'none';}
 function showDragButton(){document.getElementById("drag").style.display = 'block'; hideSaveButton();}
 function hideDragButton(){document.getElementById("drag").style.display = 'none';}
@@ -90,15 +80,9 @@ function hideBackButton(){document.getElementById("navigateBack").style.display 
 
 
 const originUrl = window.location.origin;
-document.getElementById("drag").style.display = 'none';
-document.getElementById("save").addEventListener('click', clickOnSave);
 
 document.getElementById('drag').addEventListener('dragstart', drag);
-document.getElementById('drag').addEventListener('dragend', drop);
-document.getElementById('drag').addEventListener('click', async ()=>{
-    await navigator.clipboard.writeText(createMosMessage());
-    hideDragButton();
-});
+
 document.querySelector("#navigateBack").addEventListener('click', ()=>{
     window.parent.hideIframe();
 });

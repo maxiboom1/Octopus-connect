@@ -64,7 +64,9 @@ function htmlWrapper(htmlContent,templateUid, productionUid, templateName) {
     document.body.appendChild(scriptTag);
     document.head.appendChild(styleTag);
     document.body.setAttribute('data-template', templateUid);  
-    document.body.setAttribute('data-production', productionUid);   
+    document.body.setAttribute('data-production', productionUid);  
+    document.body.setAttribute('data-mos-id', appConfig.mosID);   
+ 
 
     // Add static category name in item name
     if(appConfig.addItemCategoryName){
@@ -80,9 +82,6 @@ function createPluginPanel(document) {
     
     // Back button
     const backButton = createButton(document,"button","Back","navigateBack","pluginPanelBtn");
-    
-    // Save button
-    const saveButton = createButton(document,"button","Save","save","pluginPanelBtn");
     
     //Create Reset btn
     const previewButton = createButton(document,"button","Reset Preview","preview","pluginPanelBtn");
@@ -103,7 +102,6 @@ function createPluginPanel(document) {
 
     // Append buttons to the "pluginPanel" div
     pluginPanelDiv.appendChild(backButton);
-    pluginPanelDiv.appendChild(saveButton);
     pluginPanelDiv.appendChild(dragButton);
     pluginPanelDiv.appendChild(previewButton);
     pluginPanelDiv.appendChild(linkButton);

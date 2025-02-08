@@ -61,6 +61,9 @@ class MosCommands {
                                 <gfxItem>${newUid}</gfxItem>
                                 <gfxTemplate>${el.mosExternalMetadata.gfxTemplate}</gfxTemplate>
                                 <gfxProduction>${el.mosExternalMetadata.gfxProduction}</gfxProduction>
+                                <data>${el.mosExternalMetadata.data}</data>
+                                <scripts>${el.mosExternalMetadata.scripts}</scripts>
+                                <metadata>${el.mosExternalMetadata.metadata}</metadata>
                                 <modified>Controller</modified>
                             </mosExternalMetadata>
                         </item>
@@ -68,9 +71,11 @@ class MosCommands {
             </mos>`;  
             
             const result = {
-                replaceMosMessage:msg,
-                messageID:this.messageID
+                replaceMosMessage: msg,
+                messageID: this.messageID,
+                storyID: story.storyID
             };
+            
             this.messageID++;
             return result;
     }

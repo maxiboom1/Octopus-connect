@@ -1,9 +1,9 @@
-import appConfig from "../3-utilities/app-config.js";
 import db from "../1-dal/sql.js";
 import processAndWriteFiles from "../3-utilities/file-processor.js";
 import cache from "../2-cache/cache.js";
 import timeConvertors from "../3-utilities/time-convertors.js";
 import logger from "../3-utilities/logger.js";
+import appConfig from "../3-utilities/app-config.js";
 
 
 class SqlService {
@@ -13,6 +13,7 @@ class SqlService {
     async initialize(){
         try {
             await this.deleteDBStories();
+            await this.deleteDBItems();
             await this.getAndStoreProductions(); 
             await this.getAndStoreTemplates();
         }        
@@ -28,6 +29,20 @@ class SqlService {
             logger(`[SQL] ngn_inews_stories cleared....`);
         } catch (error) {
             console.error('Error deleting stories from SQL:', error);
+            throw error;
+        }
+    }
+
+    async deleteDBItems() {
+        
+        if(appConfig.keepSqlItems) return;
+        
+        try {
+            const sql = `DELETE FROM ngn_inews_items`;
+            await db.execute(sql);
+            logger(`[SQL] ngn_inews_items cleared....`);
+        } catch (error) {
+            console.error('Error deleting items from SQL:', error);
             throw error;
         }
     }
@@ -245,33 +260,63 @@ class SqlService {
     
 // ********************* ITEMS FUNCTIONS ********************** //
 
-    async updateItem(rundownStr, item) { // Item: {uid, rundown, story, ord}
+    async upsertItem(rundownStr, item) { // Item: {uid, name, production, rundown, story, ord, template, data, scripts}
+        
         const values = {
+            uid: item.uid,
+            name: item.name,
             lastupdate: timeConvertors.createTick(),
+            production: item.production,
             rundown: item.rundown,
             story: item.story,
-            enabled: 1,
             ord: item.ord,
             ordupdate: timeConvertors.createTick(),
-            uid: item.uid
+            template: item.template,
+            data: (item.data).slice(1, -1), // Slice removes "" quotes as the data come from mos as string
+            scripts: (item.scripts).slice(1, -1), // Slice removes "" quotes as the data come from mos as string
+            enabled: 1,
+            tag: ""
         };
+
         const sqlQuery = `
-            UPDATE ngn_inews_items SET 
-            lastupdate = @lastupdate, rundown = @rundown, story = @story, ord = @ord, ordupdate = @ordupdate, enabled = @enabled
-            OUTPUT INSERTED.*
-            WHERE uid = @uid;`;
-    
+            MERGE INTO ngn_inews_items AS target
+            USING (VALUES (@uid, @name, @lastupdate, @production, @rundown, @story, @ord, @ordupdate, @template, @data, @scripts, @enabled, @tag)) 
+            AS source (uid, name, lastupdate, production, rundown, story, ord, ordupdate, template, data, scripts, enabled, tag)
+            ON target.uid = source.uid
+            WHEN MATCHED THEN
+                UPDATE SET 
+                    lastupdate = source.lastupdate,
+                    rundown = source.rundown,
+                    story = source.story,
+                    ord = source.ord,
+                    ordupdate = source.ordupdate,
+                    enabled = source.enabled
+            WHEN NOT MATCHED THEN
+                INSERT (name, lastupdate, production, rundown, story, ord, ordupdate, template, data, scripts, enabled, tag)
+                VALUES (source.name, source.lastupdate, source.production, source.rundown, source.story, source.ord, source.ordupdate, source.template, source.data, source.scripts, source.enabled, source.tag)
+            OUTPUT INSERTED.*;`;
+
         try {
-            const result =await db.execute(sqlQuery, values);
-            if(result.rowsAffected[0] > 0){
-                logger(`[SQL] Item in {${rundownStr}}, story {${item.story}} updated`); 
+            const result = await db.execute(sqlQuery, values);
+            if (result.rowsAffected[0] > 0) {
+                
+                const assertedUid = result.recordset[0].uid;
+                
+                if(assertedUid === String(item.uid)){
+                    logger(`[SQL] Item in {${rundownStr}}, story {${item.story}} updated with uid {${assertedUid}}`);
+                    return {success:true, event:"update", uid:assertedUid};
+                } else {
+                    logger(`[SQL] Item in {${rundownStr}}, story {${item.story}} restored with uid {${assertedUid}}`);
+                    return {success:true, event:"create", uid:assertedUid};
+                }
+                
             } else {
-                logger(`[SQL] Item {${item.uid}}: order: {${item.ord}]} in {${rundownStr}} story {${item.story}} doesn't exists in DB`,"red");
+                logger(`[SQL] Item {${item.uid}}: order: {${item.ord}]} in {${rundownStr}} story {${item.story}} failed to update or insert`, "red");
+                return {success:false, event:"error"};
             }
-            return result.rowsAffected[0] > 0;
         } catch (error) {
             console.error('Error on storing GFX item:', error);
-            return null;
+            return {success:false, event:"error", error:error};
         }
     }
 
@@ -292,7 +337,7 @@ class SqlService {
             if(result.rowsAffected[0] > 0){
                 logger(`[SQL] GFX item {${gfxItem}} order changed`); 
             } else {
-                logger(`[SQL] Item {${item.uid}} order:{${item.ord}} in {${rundownStr}}, story {${item.story}} doesn't exists in DB`,"red");
+                logger(`[SQL] Item {${gfxItem}} order:{${ord}} in {${rundownStr}}, doesn't exists in DB`);
             }
 
         } catch (error) {
@@ -383,6 +428,21 @@ class SqlService {
  
         } catch (error) {
             console.error('Error on fetching item data:', error);
+            return null;
+        }
+    }
+
+    async getItemsIdArrByRundownId(rundownId){
+        const values = {rundown:rundownId};
+    
+        const sqlQuery = `SELECT uid FROM ngn_inews_items WHERE rundown = @rundown;`;
+    
+        try {
+            const result = await db.execute(sqlQuery, values);
+            return result.recordset.map(row => row.uid);
+ 
+        } catch (error) {
+            console.error('Error on fetching item by rundownId data:', error);
             return null;
         }
     }
