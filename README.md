@@ -7,6 +7,13 @@ Connects to octopus NRCS server using MOS protocol. Provide GFX plugin. Based on
 
 ## Application notes
 
+### V 1.3.01
+
+- Bug fixed: JS JSON.stringify and quotes in the start and end of converted string. Therefore - those quotes fetches by our app, and stores in sql with the quotes. Then, when user attempt to open the item - it fails duo the quotes. Fix: Slice quotes once in mosMessageCreate before saving it in the story.
+- Since we not use "save" with pre configured item data - so logically any new item in the system is "Restored" item.
+Therefore, log terminology changed from "Restored item" to "new item".
+
+
 ### V 1.3.0
 
 - Plugin saves on NRCS story "data" and "scripts". This for the ability restore the item, and open/edit item while rundown is offline (not in SQL).

@@ -272,8 +272,8 @@ class SqlService {
             ord: item.ord,
             ordupdate: timeConvertors.createTick(),
             template: item.template,
-            data: (item.data).slice(1, -1), // Slice removes "" quotes as the data come from mos as string
-            scripts: (item.scripts).slice(1, -1), // Slice removes "" quotes as the data come from mos as string
+            data: (item.data),
+            scripts: (item.scripts),
             enabled: 1,
             tag: ""
         };

@@ -148,7 +148,6 @@ function createTemplateHtml(template){
 
 async function mosMsgFromHost(event) {
     var message = event.data;
-    console.log(message);
     if (event.origin != getNewsroomOrigin()) { 
         return; 
     }
@@ -160,7 +159,7 @@ async function mosMsgFromHost(event) {
         const itemID = extractTagContent(message, "itemID");
         
         //Sending also "data" and itemName from NRCS story - so if rundown is offline (un-monitored), user still can open and edit it
-        const cachedData = extractTagContent(message, "data").slice(1,-1);
+        const cachedData = extractTagContent(message, "data");//.slice(1,-1);
         const cachedName = extractTagContent(message, "itemSlug");
         renderItem(templateId, gfxItem,itemID, cachedData,cachedName);
         

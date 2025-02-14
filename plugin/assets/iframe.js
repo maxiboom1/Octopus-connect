@@ -48,8 +48,8 @@ function createMosMessage(){
                     <gfxProduction>${productionId}</gfxProduction>
                     <metadata>${decodeURIComponent(data)}</metadata>
                     <modified>Plugin</modified>
-                    <data>${JSON.stringify(data)}</data>
-                    <scripts>${scripts}</scripts>
+                    <data>${JSON.stringify(data).slice(1,-1)}</data>
+                    <scripts>${scripts.slice(1,-1)}</scripts>
                 </mosExternalMetadata>
             </item>
         </ncsItem>

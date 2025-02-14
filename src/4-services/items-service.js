@@ -38,8 +38,6 @@ async function registerItems(story, options = { itemIDArr: [], replaceEvent:fals
         
         ord++;
     }
-
-
 }
 
 async function createNewItem(item, story, el) { //Item: {uid, name, production, rundown, story, ord, template, data, scripts}
@@ -57,8 +55,8 @@ async function createNewItem(item, story, el) { //Item: {uid, name, production, 
 
         // Item wasn't exist in DB ==> Restore item
         else if(result.event === "create"){
-            logger(`[ITEM] New Item {${item.name}} restored in {${story.rundownStr}}`);
-            await sendMosItemReplace(story, el, result.uid, "ITEM RESTORE");
+            //logger(`[ITEM] New Item {${item.name}} restored in {${story.rundownStr}}`);
+            await sendMosItemReplace(story, el, result.uid, "NEW ITEM");
         }
 
     
@@ -127,7 +125,7 @@ function waitForRoAck(messageID, timeout = 5000) {
         const listener = (msg) => {
             if (msg.mos && msg.mos.roAck && msg.mos.messageID === messageID) {
                 mosRouter.off('roAckMessage', listener);
-                logger(`[ITEM] mosItemReplace ack'd for messageID: ${messageID}`, "green");
+                //logger(`[ITEM] mosItemReplace ack'd for messageID: ${messageID}`, "green");
                 resolve();
             }
         };

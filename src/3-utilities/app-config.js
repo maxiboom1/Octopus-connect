@@ -6,7 +6,7 @@ const appConfig =JSON.parse(readFileSync('./config.json', 'utf8'));
 // ***************** App Advanced Configuration ***************** //
 
 // App Version
-appConfig.version = "1.3.0";
+appConfig.version = "1.3.01";
 
 // Express static server port
 appConfig.pluginPort = 3000;
